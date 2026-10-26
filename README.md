@@ -353,9 +353,6 @@ Questions, feedback, or a bug to report? Send a private message through the MixL
 
 <a href="https://snuffy420.github.io/MixLogic/docs/contact.html"><img src="assets/contact-button.svg" width="250" height="48" alt="Contact the MixLogic developer"></a>
 
-![MixLogic contact page](docs/screenshots/1.4.0/contact-desktop.png)
-
-The form uses Formspree and sends only the information you enter. For reproducible bugs, include your MixLogic version, OS and steps. GitHub Pages needs to be enabled for the contact link; the included [publishing guide](docs/PUBLISHING.md) explains that setup.
 
 ## Help, About and support
 
