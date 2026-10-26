@@ -1,98 +1,86 @@
 # Changelog
 
-## 1.3.0 — 2026-10-25
+## 1.4.0 — 2026-10-26
 
-This release consolidates the improvements made since 1.1.3, including the 1.2.x development builds and the final 1.3.0 test build.
+First public release. Earlier 1.x versions were local development/test builds.
 
-### Saved playlists and portable sessions
+### Rekordbox import, library and session
 
-- Added a collapsible **Playlists** browser with search, quick switching, import, rename and removal.
-- Save each imported Rekordbox M3U8/TXT pair and its parsed track metadata locally; reopening a saved playlist no longer requires finding the original export files again.
-- Reimporting the same file pair updates its saved entry while retaining its chosen name and linked music folder.
-- Added a dedicated `MixLogic-data` directory beside the executable, containing the SQLite catalogue/session and saved source copies.
-- Restore the last playlist, selected preview track, current set and exact set order on startup.
-- Restore the relation chart, wheel label mode, variation highlighting, transition overlap, browser visibility, column visibility, custom column widths and table panel heights.
-- Switching source playlists keeps the current set intact, allowing tracks from several libraries to be combined.
-- Removing a browser entry keeps the original music and retained source-export copies.
-- Added automatic migration from the initial saved-playlist database schema without discarding existing playlists or sessions.
-- Sessions save automatically with a short debounce and flush on normal close. Save failures are reported rather than silently discarding the session.
+- Import matching Rekordbox M3U8/TXT exports, retaining source copies and declared track metadata.
+- Read UTF-16 and UTF-8 TXT input, Windows/Unix-style paths and supported audio extensions.
+- Save multiple libraries in a searchable, collapsible playlist browser with rename/remove controls.
+- Remember each playlist's linked audio folder; relink nested music folders and show the configured-folder highlight.
+- Reimport matching source pairs without repeatedly creating the same library; retain a chosen name and folder.
+- Restore the previous library, preview selection, active set, panel/column sizes and preferences. Playback stays stopped on startup.
+- Keep the active set while changing libraries, allowing sets assembled from multiple playlists.
 
-### Linked music folders
+### Set building and exact-order export
 
-- Each saved playlist now retains its own music-folder selection and resolved audio paths.
-- The Relink Folder picker starts from the playlist's saved folder.
-- Reimported source playlists reuse their remembered folder for matching tracks.
-- Relinking updates matching tracks already in the current set, preserving order and duplicates.
-- Display the active playlist's music folder in the browser and in tooltips.
-- Relink Folder is enabled when a library is loaded and uses an active highlight when a folder is configured.
+- Add, reorder, remove and clear tracks; confirm duplicate additions and replacement of an existing set when needed.
+- Export standard UTF-8 M3U8 with the exact set order, including repeated tracks.
+- Include optional MixLogic metadata comments so its exported sets reopen with titles, artists, BPM, keys, duration and order without another TXT file.
+- Check missing audio paths before export. Audio files and embedded tags are not modified or bundled with the playlist.
+- Calculate estimated set length from track durations and the selected Transition Time overlap.
+- Use explicit Unknown fields and Unknown total length when required duration metadata is missing.
 
-### Main window and track tables
+### Metadata accuracy
 
-- Replaced duplicate small title-bar branding with one compact, draggable toolbar/header containing the larger logo, app name, version and window controls.
-- Moved the toolbar to the top of the window, retaining minimize, maximize/restore and close controls.
-- Increased the space available to the Camelot wheel by sizing its column against the workspace height and the track tables' minimum width.
-- Shortened the right-side table area horizontally, reduced table/footer text, tightened row spacing, and removed the redundant Imported Library and Set Builder headings.
-- Retained at least four complete rows per table at the supported minimum window size; default layouts used in validation show six rows at 1100 × 700.
-- Removed the scrolling/repeated ticker. Selected-track details now stay on one line, with long content available on hover.
-- Added a dedicated, always-visible **Relation to last** label so long track titles cannot hide the transition information.
-- Moved Play and Stop into the toolbar, centered between Export and Options, with cyan Play/Pause and red Stop styling.
-- Moved Search library below the right panel and renamed Mix time to **Transition Time**.
-- Made every table column interactive, including Title and Artist, and added a draggable divider between the two tables.
-- Added **Options → Table columns** with independent visibility checkboxes for each table; at least one column remains visible.
-- Removed the old **Open MixLogic Set (.m3u8)** toolbar button in favour of saved playlists, session restore and direct reimport of current exports.
-- Fixed the set table's missing musical-key value and displaced duration cell; all seven columns are now populated and tinted correctly.
+- Never substitute guessed keys or BPM values for unavailable or unverifiable metadata.
+- Display Unknown consistently in Title, Artist, BPM, Camelot, Key and Time in both tables when those fields are missing/invalid.
+- Provide ! row markers and field tooltips, including when optional columns are hidden.
+- Provide an optional bounded Metadata details table instead of intrusive import popups or a permanent warning banner.
+- Keep known metadata intact and treat unknown keys neutrally in compatibility displays.
 
-### Selection, preview and relations
+### Harmonic mixing and the wheel
 
-- Selecting a track in either table updates the Camelot wheel, library compatibility colours, track details and playback preview.
-- Set selection remains available to Move Up, Move Down and Remove, and the same previewed track is retained while reordering.
-- Avoid restarting playback or rebuilding a waveform just because the same track is moved within the set.
-- Re-clicking an already-selected row can switch the preview back to that table.
-- Library filtering can preserve a selected set track as the preview reference.
-- Waveform results now follow the current preview source, including set tracks.
-- Switching charts recomputes the wheel, relation label and table colours in place without resetting the selected track or interrupting playback.
-- Clear stale wheel relation details when the selected key changes.
-- Verified all 24 starting-key rows of each supplied chart, including Chart 1's parenthesized alternatives and unlisted key pairs.
-- Renamed Chart 2 to **Harmonic Transitions**, keeping its relation mappings unchanged; saved Chart 2 preferences migrate to the new name.
+- Include two directional relation charts covering all 24 Camelot keys: Chart 1 energy boost/drop and Chart 2 harmonic transitions.
+- Update the wheel, details and Relation to last when selecting a track in either table.
+- Keep five non-3D designs: Classic, Obsidian Neon, Dark Minimal, Neon Outline and Colour-blind.
+- Preserve the original standard key/relation palettes across designs and both themes.
+- Show the selected Camelot code and musical key in every wheel's center.
+- Offer Camelot number, musical key and Both labels, plus grouped or detailed relation highlighting.
+- Give each wedge its own inset border and isolated inner/outer glow area, so neighbouring outlines retain their own colors.
+- Dim unlisted keys clearly and explain the active chart with a live legend separated by | dividers.
+- Add color-blind relation colors, patterns, text codes, selected white double outlines and a blue same-key perfect-match indication.
+- Fit accessible Both labels on separate number/key/relation rows and explain both charts independently in Help.
+- Remove all experimental 3D scenes and runtime dependencies to keep startup and interaction responsive.
 
-### Export, encoding and reopening sets
+### Waveforms and auditioning
 
-- Export UTF-8 Extended M3U8 playlists with standard `#EXTM3U` / `#EXTINF` entries and absolute native audio paths.
-- Preserve the exact set order and repeated tracks; library sorting/filtering does not affect export.
-- Check for missing audio and invalid paths before writing, so a missing-file failure does not replace an existing playlist.
-- Resolve imported relative audio paths against the original playlist's directory, rather than the application's working directory.
-- Support local file URLs, percent-encoded paths, UTF-8 BOM input and filenames containing spaces, punctuation or non-ASCII characters.
-- Write the actual available duration, falling back to the saved time string or an unknown-duration value instead of an arbitrary export duration.
-- Keep EXTINF display metadata on one line when imported tags contain line breaks.
-- Include optional MixLogic metadata comments so current exported sets reopen directly with titles, artists, BPM, keys, times and order, without a separate TXT file.
-- Reopening an exported set restores it to the lower table for editing, with confirmation before replacing a non-empty current set.
-- Corrected TXT encoding detection so UTF-8 files are not accidentally decoded as UTF-16. Added coverage for UTF-16 BOM, UTF-16 LE/BE and UTF-8 variants.
-- Clarified that Rekordbox TXT exports use UTF-16 while M3U8 remains UTF-8.
+- Preview selected tracks through toolbar Play/Pause and Stop controls with distinct cyan/red styling.
+- Decode/analyze audio in cancellable background workers and cache the measured overview.
+- Coalesce rapid browsing requests, cancel stale work and keep PCM memory compact.
+- Seek by clicking or dragging in any waveform design.
+- Offer nine designs: Classic bars, Enhanced glow bars, Smooth filled, Spectrogram, Multilayer, Energy segments, Minimal glow line, Split bands bars and Split bands ribbons.
+- Support Normal, RGB, 3-band and MixLogic original-color modes on every design.
+- Use shared-center blue/orange/white 3-band display; reserve separate lanes for explicitly named Split bands designs.
+- Retain original overlapping cyan/orange/pink Classic bars as a saved option.
+- Use measured FFT bands/frequency bins for spectral views; energy labels describe measured intensity rather than guessed song sections.
+- Preview a copy of the loaded track's actual waveform data, playhead and display height in Appearance.
+- Bundle an original dance example generated offline with the same 256-bin overview analyzer for use when no waveform is loaded.
+- Display the exact loading text Analyzing Waveform.
 
-### Dialogs, About, Help and donations
+### Interface and preferences
 
-- Replaced native message/rename windows with app-styled frameless dialogs using the shared title bar and MixLogic icon.
-- Replaced the generic information icon in messages with the app icon.
-- Expanded About with a clearer product description, saved-library workflow, harmonic planning, export/editing overview and creator credits.
-- Updated Help for saved playlists, remembered folders, session restore, either-table preview, Transition Time, adjustable tables, column visibility and reopening exports.
-- Explicitly separated the default table-row colour legend from wheel dimming/outlines and per-variation highlighting.
-- Added a centered **Copy BTC address** button under the donation address.
-- Added a reserved confirmation footer; copying and clearing the status do not resize or reflow the dialog.
+- Offer saved Dark and Light themes, local Appearance previews and explicit Apply for design/theme changes.
+- Redesign Wheel settings with clickable sample cards, clear radio indicators, chart descriptions and a live preview.
+- Redesign Table columns with aligned alternating rows, field descriptions, visible counts and themed checkmarks.
+- Independently hide/show columns in Library and Set builder, retaining at least one visible column.
+- Resize columns and the library/set divider; remember their sizes.
+- Keep appearance hints to one elided line so descriptions do not move the preview panel.
+- Consolidate the top toolbar, relocate transport controls, reduce footer clutter and place Search beside Transition Time.
+- Use app-themed popup headers/icons, stationary track details and consistent rename/relink dialogs.
 
-### Build, release and validation
+### Help, contact, licensing and distribution
 
-- Fixed the QtGui startup failure caused by an incompatible ICU DLL being collected from an unrelated build-machine tool. Dependency discovery uses Windows system paths and rejects unexpected bundled ICU libraries.
-- Added a frozen-executable smoke test covering startup, the Playlists toggle, Options and donation/QR dependency loading.
-- Added a Windows version resource for the public executable: MixLogic 1.3.0, zerØ software.
-- Added pinned runtime/build dependency files, source launch/setup helpers and reproducible release tools.
-- Added current versioned screenshots, a detailed README, release notes, building/publishing instructions, third-party notices and GPL-3.0-or-later licensing.
-- Public distribution includes nested-folder portable and source `.7z` archives, SHA-256 sidecars (`.sha256` and `.sha`), `SHA256SUMS.txt`, and a clean GitHub upload tree.
-- Release packaging excludes saved personal playlists, settings, waveform databases, generated demo audio, old test executables and local backups.
-- All 26 automated regression tests pass. Validation includes the 1,152 directional key pairs across the two charts, real column dragging, session/database migration, Unicode paths, export/reimport order, set preview/reordering and fixed-size BTC confirmation.
-- Checked the UI at 150% scaling, with the browser open and closed at 1100 × 700, 1280 × 700 and 1480 × 920. Public screenshots use generated demo audio and example metadata.
+- Include expanded About/Help, playlist guidance for the saved-library system, both chart/color explanations and source-installation guides.
+- Include optional Bitcoin support with QR, Copy BTC address and a stable confirmation area.
+- Add a MixLogic-themed Formspree contact page, a local SVG README button and GitHub Pages setup instructions.
+- Provide detailed Windows, macOS and Linux source setup, including venv and app-local non-venv methods for macOS/Linux.
+- Package Windows x64 portable files inside a nested MixLogic folder, plus source ZIP and 7z archives.
+- Provide a dark logo-themed Inno x64 installer with Program Files default, uninstaller, Add/Remove Programs entry, Start menu and optional desktop shortcut.
+- Store installed app data under the user's profile and preserve it on uninstall; retain portable data alongside the portable app.
+- Include GPL-3.0-or-later licensing, third-party notices and exact dependency provenance/license manifests.
+- Include public screenshots/galleries, 57 source tests, browser-free contact-script tests, build/installer checks and SHA-256 release manifests.
 
-### Current scope
-
-- Windows x64 and Rekordbox-oriented playlist workflows are the release focus. There is no Denon/Serato-specific integration.
-- MixLogic exports playlists, not rendered audio mixes or Rekordbox USB/device databases.
-- Live desktop import in Rekordbox and subjective audio/transition review remain manual validation steps; see `docs/VALIDATION.md`.
+Windows x64 is tested. Native macOS/Linux GUI and audio behavior, live Formspree delivery after Pages publication, and end-to-end Rekordbox/device workflows remain separate manual checks described in the documentation.

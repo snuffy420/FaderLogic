@@ -1,4 +1,4 @@
-"""Render the real 1.3.0 GUI using generated audio and example Rekordbox metadata."""
+"""Render the current GUI using generated audio and example Rekordbox metadata."""
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_SCALE_FACTOR", "1.25")
@@ -19,10 +19,51 @@ from PyQt6.QtGui import QFontDatabase, QIcon
 from PyQt6.QtWidgets import QApplication, QTabWidget
 from PyQt6 import sip
 from mixlogic import __version__, camelot, playlist
-from mixlogic.dialogs import AboutDialog, OptionsDialog, MessageDialog, RenameDialog, StyledMessageBox
+from mixlogic.dialogs import AboutDialog, OptionsDialog, MessageDialog, RenameDialog, StyledMessageBox, MetadataReviewDialog
+from mixlogic.appearance import WHEEL_STYLES, WAVE_STYLES
 from mixlogic.main_window import MainWindow
 from mixlogic.theme import STYLESHEET
 from mixlogic.waveform import compute_bands
+
+
+def render_galleries(app,output):
+    from PyQt6.QtWidgets import QWidget,QGridLayout,QVBoxLayout,QLabel,QFrame
+    from mixlogic.widgets import CamelotWheelWidget,WaveformWidget
+    from mixlogic.appearance import WAVE_MODES,wheel_legend_html
+    from mixlogic.dance_preview import DANCE_PREVIEW
+    camelot.set_active_chart(next(iter(camelot.CHART_CHOICES)))
+    def save(widget,name):
+        widget.show()
+        for _ in range(3):app.processEvents()
+        if not widget.grab().save(str(output/name)):raise RuntimeError(name)
+        widget.close()
+    wheels=QWidget();wheels.setObjectName('root');grid=QGridLayout(wheels)
+    for i,(style,title) in enumerate(WHEEL_STYLES.items()):
+        card=QFrame();card.setObjectName('card');box=QVBoxLayout(card)
+        heading=QLabel(title);heading.setObjectName('sectionTitle');box.addWidget(heading)
+        wheel=CamelotWheelWidget();wheel.setFixedSize(280,280);wheel.set_visual_style(style)
+        wheel.set_show_all(True);wheel.set_active_key('5A');box.addWidget(wheel)
+        grid.addWidget(card,i//3,i%3)
+    save(wheels,'wheel-gallery.png')
+    waves=QWidget();waves.setObjectName('root');grid=QGridLayout(waves)
+    for i,(style,title) in enumerate(WAVE_STYLES.items()):
+        card=QFrame();card.setObjectName('card');box=QVBoxLayout(card)
+        heading=QLabel(title);heading.setObjectName('sectionTitle');box.addWidget(heading)
+        wave=WaveformWidget();wave.setFixedSize(350,48);wave.set_track('Generated dance overview',list(DANCE_PREVIEW))
+        wave.set_appearance(style,'bands');wave.set_progress(.4);box.addWidget(wave)
+        grid.addWidget(card,i//3,i%3)
+    save(waves,'waveform-gallery.png')
+    modes=QWidget();modes.setObjectName('root');box=QVBoxLayout(modes)
+    for mode,title in WAVE_MODES.items():
+        heading=QLabel(title);heading.setObjectName('sectionTitle');box.addWidget(heading)
+        wave=WaveformWidget();wave.setFixedSize(1100,48);wave.set_track('Same audio overview',list(DANCE_PREVIEW))
+        wave.set_appearance('enhanced',mode);wave.set_progress(.4);box.addWidget(wave)
+    save(modes,'waveform-modes.png')
+    accessible=QWidget();accessible.setObjectName('root');box=QVBoxLayout(accessible)
+    wheel=CamelotWheelWidget();wheel.setFixedSize(600,600);wheel.set_visual_style('accessible')
+    wheel.set_label_mode('both');wheel.set_show_all(True);wheel.set_active_key('11A');box.addWidget(wheel)
+    legend=QLabel(wheel_legend_html(camelot.active_chart_name,True,True));legend.setWordWrap(True);legend.setMaximumWidth(600);box.addWidget(legend)
+    save(accessible,'accessible-both.png')
 
 
 def main():
@@ -106,12 +147,28 @@ def main():
             window.refresh_relations()
             window.waveform.set_progress(.32)
             capture(window, filename)
+        capture(window.playlist_browser,"playlist-browser.png")
         options = OptionsDialog(window.wheel, icon_path, window)
         options.show()
-        capture(options, "options-wheel.png")
+        capture(options, "appearance-classic.png")
+        for style in WHEEL_STYLES:
+            options.appearance.wheel_choice.setCurrentIndex(options.appearance.wheel_choice.findData(style))
+            options.appearance.wave_choice.setCurrentIndex(options.appearance.wave_choice.findData('filled'))
+            options.appearance.mode_choice.setCurrentIndex(options.appearance.mode_choice.findData('rgb'))
+            capture(options, f"appearance-{style}.png")
         options.findChild(QTabWidget).setCurrentIndex(1)
+        capture(options, "options-wheel.png")
+        options.findChild(QTabWidget).setCurrentIndex(2)
         capture(options, "columns.png")
         options.close()
+        for style in WHEEL_STYLES:
+            window.apply_appearance(dict(wheel_style=style, wave_style='filled', wave_mode='rgb'))
+            capture(window, f"workspace-{style}.png")
+        window.apply_appearance(dict(wheel_style='accessible',wave_style='filled',wave_mode='bands',theme='light'))
+        capture(window,'workspace-light.png')
+        options=OptionsDialog(window.wheel,icon_path,window);options.show()
+        capture(options,'appearance-light.png');options.close()
+        window.apply_appearance(dict(wheel_style='classic', wave_style='classic', wave_mode='bands'))
         about = AboutDialog(QIcon(icon_path), icon_path, window)
         about.resize(680, 680)
         about.show()
@@ -123,6 +180,10 @@ def main():
         message.show(); capture(message, "message.png"); message.close()
         rename = RenameDialog(window, "Rename playlist", "Playlist name", "Peak Time")
         rename.show(); capture(rename, "rename.png"); rename.close()
+        window.library[0].update(key='Unknown',bpm='Unknown',artist='Unknown Artist')
+        window.library[1].update(time='Unknown')
+        metadata=MetadataReviewDialog(window);metadata.show();capture(metadata,'metadata.png');metadata.close()
+        render_galleries(app,output)
         print("Rendered current screenshots:", output)
     finally:
         if window is not None:

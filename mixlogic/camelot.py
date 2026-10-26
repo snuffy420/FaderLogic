@@ -155,7 +155,9 @@ def normalize_key(key_str):
 
 def camelot_sort_key(code):
     """Sort order for Camelot codes: 1A..12A then 1B..12B."""
-    code = normalize_key(code) or "8A"
+    code = normalize_key(code)
+    if code is None:
+        return 99, "Z"
     return int(code[:-1]), code[-1]
 
 
@@ -183,15 +185,17 @@ VARIATIONS = {
 }
 
 
-def get_compatibility(key1, key2):
+def get_compatibility(key1, key2, chart_name=None):
     """Return (colour, label) describing how key2 mixes after key1.
 
     colour is one of: green (perfect/boost), orange (energy drop, boost++ or mood change),
     red (incompatible).
     """
-    k1 = normalize_key(key1) or "8A"
-    k2 = normalize_key(key2) or "8A"
-    entry = CHART_CHOICES[active_chart_name].get(k1)
+    k1 = normalize_key(key1)
+    k2 = normalize_key(key2)
+    if k1 is None or k2 is None:
+        return "unknown", "Unknown — key metadata unavailable"
+    entry = CHART_CHOICES[chart_name or active_chart_name].get(k1)
     if entry is None:
         return "red", "Incompatible"
     if "minus1" in entry:

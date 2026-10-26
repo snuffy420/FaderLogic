@@ -16,9 +16,10 @@ from . import playlist
 from . import __version__
 from . import camelot
 from .camelot import REAL_KEYS, VARIATIONS, camelot_sort_key, get_compatibility, normalize_key
-from .theme import COLORS
+from .theme import COLORS, style_widget, current_theme, apply_theme, palette_for
 from .titlebar import TitleBar
-from .dialogs import AboutDialog, OptionsDialog, StyledInputDialog as QInputDialog, StyledMessageBox as QMessageBox
+from .dialogs import AboutDialog, OptionsDialog, MetadataReviewDialog, StyledInputDialog as QInputDialog, StyledMessageBox as QMessageBox
+from .appearance import clean_appearance, RELATION_CODES, accessible_legend, standard_legend, wheel_legend_html
 from .playlist_browser import PlaylistBrowser
 from .storage import LibraryStore, track_snapshot
 from .waveform import WaveformCache, WaveformWorker
@@ -30,6 +31,7 @@ ROW_COLOURS = {
     "orange": QColor(84, 52, 14),
     "red": QColor(70, 22, 28),
     "selected": QColor(29, 53, 80),
+    "unknown": QColor(38, 41, 48),
 }
 
 
@@ -66,6 +68,7 @@ class MainWindow(QMainWindow):
         self.library = []          # all imported tracks
         self.active_set = []       # tracks in the set being built
         self.worker = None
+        self._wave_workers = set()
         self._preview_source = "library"
         self._preview_track = None
         self.store = LibraryStore(os.path.join(base_dir, "MixLogic-data"))
@@ -75,6 +78,7 @@ class MainWindow(QMainWindow):
         self._restoring = True
         self._fitting_columns = False
         self._save_error_shown = False
+        self._closed = False
         self._save_timer = QTimer(self)
         self._save_timer.setSingleShot(True)
         self._save_timer.setInterval(250)
@@ -109,7 +113,7 @@ class MainWindow(QMainWindow):
 
         toolbar = TitleBar(self, self._icon_path, "", "", inline=True)
         toolbar.setObjectName("toolbar")
-        toolbar.setStyleSheet(toolbar.styleSheet() +
+        style_widget(toolbar,toolbar.styleSheet() +
             "QWidget#toolbar QPushButton { font-size: 9pt; padding: 3px 8px; }"
         )
         top = toolbar.layout()
@@ -126,11 +130,11 @@ class MainWindow(QMainWindow):
         top.addSpacing(4)
         title = QLabel(APP_NAME)
         title.setObjectName("brandTitle")
-        title.setStyleSheet("font-size: 13pt;")
+        style_widget(title,"font-size: 13pt;")
         top.addWidget(title)
         version = QLabel(__version__)
         version.setObjectName("brandVersion")
-        version.setStyleSheet("font-size: 9pt;")
+        style_widget(version,"font-size: 9pt;")
         top.addWidget(version)
         top.addSpacing(12)
         self.btn_playlists = QPushButton("Playlists")
@@ -200,7 +204,7 @@ class MainWindow(QMainWindow):
 
         footer = QWidget()
         footer.setObjectName("footer")
-        footer.setStyleSheet(
+        style_widget(footer,
             "QWidget#footer QLabel, QWidget#footer QLineEdit, QWidget#footer QSpinBox "
             "{ font-size: 8pt; }"
             "QWidget#footer QLineEdit { padding: 3px 8px; }"
@@ -211,6 +215,12 @@ class MainWindow(QMainWindow):
         self.lbl_counts = QLabel()
         self.lbl_counts.setObjectName("hint")
         bottom.addWidget(self.lbl_counts)
+        self.btn_metadata = QPushButton("Metadata")
+        style_widget(self.btn_metadata,f"font-size:8pt;padding:2px 6px;color:{COLORS['muted']};")
+        self.btn_metadata.setToolTip("Missing values are shown as Unknown in each table. Click to review details.")
+        self.btn_metadata.clicked.connect(self.show_metadata_details)
+        self.btn_metadata.hide()
+        bottom.addWidget(self.btn_metadata)
         bottom.addStretch()
         self.right_footer = QWidget()
         right = QHBoxLayout(self.right_footer)
@@ -232,7 +242,7 @@ class MainWindow(QMainWindow):
         right.addWidget(self.overlap)
         right.addSpacing(8)
         self.lbl_set_time = QLabel()
-        self.lbl_set_time.setStyleSheet(f"color: {COLORS['neon_green']}; font-weight: bold; font-size: 8pt;")
+        style_widget(self.lbl_set_time,f"color: {COLORS['neon_green']}; font-weight: bold; font-size: 8pt;")
         right.addWidget(self.lbl_set_time)
         bottom.addWidget(self.right_footer)
         outer.addWidget(footer)
@@ -277,7 +287,7 @@ class MainWindow(QMainWindow):
         self.track_details = TrackDetailsWidget()
         details.addWidget(self.track_details, 1)
         self.lbl_relation = QLabel("Relation: select a track")
-        self.lbl_relation.setStyleSheet(f"font-size: 9pt; color: {COLORS['muted']};")
+        style_widget(self.lbl_relation,f"font-size: 9pt; color: {COLORS['muted']};")
         self.lbl_relation.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
         details.addWidget(self.lbl_relation)
         layout.addLayout(details)
@@ -294,13 +304,18 @@ class MainWindow(QMainWindow):
         self.wheel = CamelotWheelWidget()
         self.wheel.showAllChanged.connect(self._on_show_all_changed)
         wheel_layout.addWidget(self.wheel)
+        self.wheel_legend = QLabel()
+        self.wheel_legend.setWordWrap(True)
+        style_widget(self.wheel_legend,"font-size:8pt;color:#E4E7EC;")
+        self.wheel_legend.hide()
+        wheel_layout.addWidget(self.wheel_legend)
         layout.addWidget(wheel_card, 1)
         return panel
 
     def _build_right_panel(self):
         panel = QWidget()
         panel.setMinimumWidth(560)
-        panel.setStyleSheet(
+        style_widget(panel,
             "QPushButton, QTableWidget, QHeaderView::section { font-size: 9pt; }"
             "QPushButton { padding: 4px 10px; }"
             "QHeaderView::section { padding: 4px; }"
@@ -313,6 +328,7 @@ class MainWindow(QMainWindow):
         lib_layout.setContentsMargins(8, 8, 8, 8)
         self.lib_table = self._make_table(["Title", "Artist", "BPM", "Camelot", "Key", "Time"])
         self.lib_table.setSortingEnabled(True)
+        self.lib_table.model().layoutChanged.connect(lambda *_: self._sync_metadata_markers(self.lib_table))
         self.lib_table.itemSelectionChanged.connect(self._on_library_selected)
         self.lib_table.cellClicked.connect(lambda *_: self._on_library_selected())
         lib_layout.addWidget(self.lib_table)
@@ -361,7 +377,11 @@ class MainWindow(QMainWindow):
         table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setAlternatingRowColors(False)
-        table.verticalHeader().setVisible(False)
+        table.verticalHeader().setVisible(True)
+        table.verticalHeader().setFixedWidth(18)
+        style_widget(table.verticalHeader(),"QHeaderView::section { background:#121417; color:#FF9A2E; border:none; padding:0px; font-size:9pt; font-weight:700; }")
+        table.verticalHeader().setToolTip("! marks missing metadata. Hover for details; double-click to review.")
+        table.verticalHeader().sectionDoubleClicked.connect(lambda *_: self.show_metadata_details())
         table.setShowGrid(False)
         table.setTextElideMode(Qt.TextElideMode.ElideRight)
         table.verticalHeader().setMinimumSectionSize(24)
@@ -423,15 +443,22 @@ class MainWindow(QMainWindow):
         self.lbl_counts.setToolTip(f"Current playlist: {self.active_playlist_name}"
                                   if self.active_playlist_name else "No saved playlist selected")
         self._update_set_time()
+        bad_library = [track for track in self.library if playlist.metadata_issues(track)]
+        bad_set = [track for track in self.active_set if playlist.metadata_issues(track)]
+        self.btn_metadata.setVisible(bool(bad_library or bad_set))
+        self.btn_metadata.setText(f"Metadata · {len(bad_library) + len(bad_set)}")
+        self.btn_metadata.setToolTip(f"Missing fields in {len(bad_library)} library rows and {len(bad_set)} set rows. "
+                                     "Unknown cells and ! row markers identify them. Click for details.")
         self._queue_save_session()
 
     # ---------- saved playlists and preferences ----------
     def _queue_save_session(self, *_):
-        if not self._restoring:
+        if not self._restoring and not self._closed:
             self._save_timer.start()
 
     def _save_session(self):
         self._save_timer.stop()
+        if self._closed:return True
         selected = self._selected_library_track()
         state = {
             "active_playlist_id": self.active_playlist_id,
@@ -440,6 +467,7 @@ class MainWindow(QMainWindow):
             "chart": camelot.active_chart_name,
             "label_mode": self.wheel.label_mode,
             "show_all": self.wheel.show_all,
+            "appearance": self.appearance_settings(),
             "overlap": self.overlap.value(),
             "browser_visible": self.btn_playlists.isChecked(),
             "table_sizes": self.table_splitter.sizes(),
@@ -470,6 +498,7 @@ class MainWindow(QMainWindow):
         camelot.set_active_chart(state.get("chart", camelot.active_chart_name))
         self.wheel.set_label_mode(state.get("label_mode", "camelot"))
         self.wheel.set_show_all(bool(state.get("show_all", False)))
+        self.apply_appearance(state.get("appearance", {}), persist=False)
         self.overlap.setValue(state.get("overlap", 15))
         for name, table in (("library", self.lib_table), ("set", self.set_table)):
             saved = state.get("table_columns", {}).get(name)
@@ -580,6 +609,8 @@ class MainWindow(QMainWindow):
         self._queue_save_session()
 
     def _colour_row(self, table, row, colour, ncols):
+        if current_theme()=='light':
+            colour=QColor(*[int(channel*.24+255*.76) for channel in (colour.red(),colour.green(),colour.blue())])
         for c in range(ncols):
             item = table.item(row, c)
             if item:
@@ -588,15 +619,17 @@ class MainWindow(QMainWindow):
     @staticmethod
     def _track_seconds(track):
         """Track length in seconds, from the stored mm:ss string."""
-        try:
-            minutes, seconds = track["time"].split(":")
-            return int(minutes) * 60 + int(seconds)
-        except (KeyError, ValueError, AttributeError):
-            return 210
+        return playlist.time_seconds(track.get("time"))
 
     def _update_set_time(self, *_):
         overlap = self.overlap.value()
         total = 0
+        missing = sum(self._track_seconds(track) is None for track in self.active_set)
+        if missing:
+            self.lbl_set_time.setText("Set length: Unknown")
+            self.lbl_set_time.setToolTip(f"{missing} track(s) have no verified duration. No length was guessed.")
+            self._queue_save_session()
+            return
         for i, t in enumerate(self.active_set):
             total += self._track_seconds(t)
             if i > 0:
@@ -630,7 +663,7 @@ class MainWindow(QMainWindow):
         track = self._current_preview_track()
         if not track:
             return
-        key = normalize_key(track["key"]) or "8A"
+        key = normalize_key(track["key"])
         rows = self.lib_table.selectionModel().selectedRows()
         selected_row = rows[0].row() if rows and self._preview_source == "library" else -1
         ncols = self.lib_table.columnCount()
@@ -665,7 +698,7 @@ class MainWindow(QMainWindow):
         if changed:
             self.player.stop()
             self.btn_play.setText("Play")
-        key = normalize_key(track["key"]) or "8A"
+        key = normalize_key(track["key"])
         self.wheel.set_active_key(key)
         self._colour_library_for_selection()
         self._show_details(track)
@@ -675,6 +708,11 @@ class MainWindow(QMainWindow):
 
     def _load_waveform(self, track):
         path = track["path"]
+        if self.worker and self.worker.isRunning():
+            self.worker.requestInterruption()
+        # Invalidate pending decodes when browsing quickly, including cached tracks.
+        token=object()
+        self._pending_waveform=token
         if not os.path.exists(path):
             self.player.setSource(QUrl())
             self.waveform.set_track(track["title"], [])
@@ -686,11 +724,21 @@ class MainWindow(QMainWindow):
             self.waveform.set_track(track["title"], bars)
             return
         self.waveform.set_loading()
-        if self.worker and self.worker.isRunning():
-            self.worker.computed.disconnect()
-        self.worker = WaveformWorker(path, self)
-        self.worker.computed.connect(self._on_waveform_ready)
-        self.worker.start()
+        def start_analysis():
+            if self._closed or self._pending_waveform is not token:return
+            worker=WaveformWorker(path, self)
+            self.worker=worker
+            self._wave_workers.add(worker)
+            worker.finished.connect(lambda: self._wave_worker_finished(worker))
+            worker.finished.connect(worker.deleteLater)
+            worker.computed.connect(self._on_waveform_ready)
+            worker.start()
+        QTimer.singleShot(140,start_analysis)
+
+    def _wave_worker_finished(self, worker):
+        self._wave_workers.discard(worker)
+        if self.worker is worker:
+            self.worker = None
 
     def _on_waveform_ready(self, path, bars):
         self.cache.put(path, bars)
@@ -800,6 +848,20 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "Export failed", str(exc))
 
     # ---------- table filling ----------
+    def _metadata_marker(self, table, row, track):
+        issues = playlist.metadata_issues(track)
+        marker = QTableWidgetItem("!" if issues else "")
+        marker.setToolTip("Missing metadata: " + "; ".join(issues) if issues else "Metadata available")
+        marker.setForeground(QColor(palette_for()['orange']))
+        table.setVerticalHeaderItem(row, marker)
+
+    def _sync_metadata_markers(self, table):
+        for row in range(table.rowCount()):
+            item = table.item(row, 0 if table is self.lib_table else 1)
+            track = item.data(Qt.ItemDataRole.UserRole) if item else None
+            if isinstance(track, dict):
+                self._metadata_marker(table, row, track)
+
     def _fill_library(self, tracks):
         preview_set = self._preview_source == "set" and self._selected_set_track() is not None
         # Populate completely before selection callbacks inspect the new playlist.
@@ -807,14 +869,19 @@ class MainWindow(QMainWindow):
             self.lib_table.setSortingEnabled(False)
             self.lib_table.setRowCount(len(tracks))
             for r, t in enumerate(tracks):
-                key = normalize_key(t["key"]) or "8A"
-                first = QTableWidgetItem(t["title"])
+                key = normalize_key(t["key"])
+                texts = playlist.display_metadata(t)
+                first = QTableWidgetItem(texts[0])
                 first.setData(Qt.ItemDataRole.UserRole, t)
-                camelot = QTableWidgetItem(key)
+                camelot = QTableWidgetItem(key or playlist.UNKNOWN)
                 camelot.setData(Qt.ItemDataRole.UserRole + 1, camelot_sort_key(key))
-                values = [first, QTableWidgetItem(t["artist"]), QTableWidgetItem(t["bpm"]),
-                          camelot, QTableWidgetItem(REAL_KEYS.get(key, key)), QTableWidgetItem(t["time"])]
+                values = [first, QTableWidgetItem(texts[1]), QTableWidgetItem(texts[2]),
+                          camelot, QTableWidgetItem(texts[4]), QTableWidgetItem(texts[5])]
+                self._metadata_marker(self.lib_table, r, t)
                 for c, item in enumerate(values):
+                    item.setToolTip("; ".join(playlist.metadata_issues(t)) or "Metadata matched to the imported source")
+                    if item.text() == playlist.UNKNOWN or item.text() == "Unknown Artist":
+                        item.setForeground(QColor(palette_for()['orange']))
                     self.lib_table.setItem(r, c, item)
             self.lib_table.setSortingEnabled(True)
             if tracks:
@@ -832,11 +899,14 @@ class MainWindow(QMainWindow):
             self.set_table.setRowCount(len(self.active_set))
             selected_row = -1
             for r, t in enumerate(self.active_set):
-                key = normalize_key(t["key"]) or "8A"
-                values = [str(r + 1), t["title"], t["artist"], t["bpm"], key,
-                          REAL_KEYS.get(key, key), t["time"]]
+                key = normalize_key(t["key"])
+                values = [str(r + 1)] + playlist.display_metadata(t)
+                self._metadata_marker(self.set_table, r, t)
                 for c, text in enumerate(values):
                     item = QTableWidgetItem(text)
+                    item.setToolTip("; ".join(playlist.metadata_issues(t)) or "Metadata matched to the imported source")
+                    if text == playlist.UNKNOWN or text == "Unknown Artist":
+                        item.setForeground(QColor(palette_for()['orange']))
                     if c == 1:
                         item.setData(Qt.ItemDataRole.UserRole, t)
                         item.setData(Qt.ItemDataRole.UserRole + 2, id(t))
@@ -845,7 +915,7 @@ class MainWindow(QMainWindow):
                     selected_row = r
                 colour = QColor(COLORS["panel_alt"])
                 if r > 0:
-                    prev = normalize_key(self.active_set[r - 1]["key"]) or "8A"
+                    prev = normalize_key(self.active_set[r - 1]["key"])
                     status, label = get_compatibility(prev, key)
                     colour = relation_tint(label, status, self.wheel.show_all)
                 self._colour_row(self.set_table, r, colour, self.set_table.columnCount())
@@ -891,6 +961,7 @@ class MainWindow(QMainWindow):
 
     def refresh_relations(self):
         # Recompute in place so chart/colour changes preserve selection and playback.
+        self._update_wheel_legend()
         current = self._current_preview_track()
         self.wheel.set_active_key(current["key"] if current else None)
         self._colour_library_for_selection()
@@ -910,6 +981,37 @@ class MainWindow(QMainWindow):
     def show_options(self):
         OptionsDialog(self.wheel, self._icon_path, self).exec()
         self._queue_save_session()
+
+    def show_metadata_details(self):
+        MetadataReviewDialog(self).exec()
+
+    def appearance_settings(self):
+        return dict(wheel_style=self.wheel.visual_style, wave_style=self.waveform.visual_style,
+                    wave_mode=self.waveform.colour_mode,theme=current_theme())
+
+    def apply_appearance(self, values, persist=True):
+        values = clean_appearance(values)
+        theme_changed=values['theme']!=current_theme()
+        apply_theme(values['theme'])
+        self.wheel.set_visual_style(values['wheel_style'])
+        self.waveform.set_appearance(values['wave_style'], values['wave_mode'])
+        self.waveform.setFixedHeight(48)
+        self._update_wheel_legend()
+        if theme_changed and not self._restoring:
+            # Recolour in place: a theme change must not select another track,
+            # restart playback, or change set order.
+            for table in (self.lib_table,self.set_table):
+                for row in range(table.rowCount()):
+                    for col in range(table.columnCount()):
+                        item=table.item(row,col)
+                        if item:item.setForeground(QColor(palette_for()['orange' if item.text()==playlist.UNKNOWN else 'text']))
+            self.refresh_relations()
+        if persist:
+            self._save_session()
+
+    def _update_wheel_legend(self):
+        self.wheel_legend.setVisible(True)
+        self.wheel_legend.setText(wheel_legend_html(camelot.active_chart_name,self.wheel.show_all,self.wheel.visual_style=='accessible'))
 
     def show_about(self):
         AboutDialog(QIcon(self._icon_path), self._icon_path, self).exec()
@@ -943,9 +1045,16 @@ class MainWindow(QMainWindow):
         self._fill_set()
 
     def closeEvent(self, event):
+        if self._closed:
+            super().closeEvent(event);return
         if not self._save_session():
             event.ignore()
             return
+        for worker in list(self._wave_workers):
+            worker.requestInterruption()
+            worker.wait()
+        self._closed=True
+        self.setProperty('_mixlogic_closed',True)
         self.store.close()
         self.cache.close()
         super().closeEvent(event)
@@ -955,24 +1064,24 @@ class MainWindow(QMainWindow):
             self.track_details.set_text("Select a track to see its details")
             self.lbl_relation.setText("Relation: select a track")
             self.lbl_relation.setToolTip("Select a library track to compare it with the last track in your set.")
-            self.lbl_relation.setStyleSheet(f"font-size: 9pt; color: {COLORS['muted']};")
+            style_widget(self.lbl_relation,f"font-size: 9pt; color: {COLORS['muted']};")
             return
-        key = normalize_key(track["key"]) or "8A"
-        relation = "set is empty"
+        key = normalize_key(track["key"])
+        relation = "set is empty" if key else "Unknown — key metadata unavailable"
         colour = COLORS["muted"]
         tooltip = "Add a track to your set to compare its key with the selected library track."
         if self.active_set:
-            last = normalize_key(self.active_set[-1]["key"]) or "8A"
+            last = normalize_key(self.active_set[-1]["key"])
             status, relation = get_compatibility(last, key)
-            colour = {"green": COLORS["green"], "orange": COLORS["orange"], "red": COLORS["red"]}[status]
+            colour = {"green": COLORS["green"], "orange": COLORS["orange"], "red": COLORS["red"], "unknown": COLORS["muted"]}[status]
             tooltip = (f"{camelot.active_chart_name}\n"
                        f"Last set track: {self.active_set[-1]['title']} ({last})\n"
                        f"Selected track: {track['title']} ({key})\n"
                        f"{last} → {key}: {relation}")
         self.lbl_relation.setText(f"Relation to last: {relation}")
         self.lbl_relation.setToolTip(tooltip)
-        self.lbl_relation.setStyleSheet(f"font-size: 9pt; font-weight: bold; color: {colour};")
+        style_widget(self.lbl_relation,f"font-size: 9pt; font-weight: bold; color: {colour};")
         self.track_details.set_text(
             f"Title: {track['title']}   |   Artist: {track['artist']}   |   BPM: {track['bpm']}   |   "
-            f"Key: {key} / {REAL_KEYS.get(key, key)}   |   Duration: {track['time']}"
+            f"Key: {key or playlist.UNKNOWN} / {REAL_KEYS.get(key, playlist.UNKNOWN)}   |   Duration: {track['time']}"
         )

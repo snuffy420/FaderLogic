@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QApplication
 from mixlogic.main_window import MainWindow
 from mixlogic import __version__
 from mixlogic.theme import STYLESHEET
+from mixlogic.paths import runtime_data_dir
 
 
 def resource_path(relative):
@@ -18,10 +19,7 @@ def resource_path(relative):
 
 
 def base_dir():
-    """Folder holding the cache database: next to the .exe when frozen, else next to this file."""
-    if getattr(sys, "frozen", False):
-        return os.path.dirname(sys.executable)
-    return os.path.dirname(os.path.abspath(__file__))
+    return runtime_data_dir()
 
 
 def main():
@@ -52,12 +50,37 @@ def main():
                 from mixlogic.dialogs import AboutDialog, OptionsDialog
                 options = OptionsDialog(window.wheel, icon_path, window)
                 assert ("library", "Artist") in options.column_checks
+                from mixlogic.appearance import WHEEL_STYLES, WAVE_STYLES, WAVE_MODES
+                options.show()
+                for style in WHEEL_STYLES:
+                    options.appearance.wheel_choice.setCurrentIndex(options.appearance.wheel_choice.findData(style))
+                    app.processEvents()
+                    assert not options.appearance.wheel_preview.grab().isNull()
+                for style in WAVE_STYLES:
+                    for mode in WAVE_MODES:
+                        options.appearance.wave_choice.setCurrentIndex(options.appearance.wave_choice.findData(style))
+                        options.appearance.mode_choice.setCurrentIndex(options.appearance.mode_choice.findData(mode))
+                        app.processEvents()
+                        assert not options.appearance.wave_preview.grab().isNull()
+                options.apply_button.click()
+                assert window.wheel.visual_style == list(WHEEL_STYLES)[-1]
+                assert window.waveform.visual_style == list(WAVE_STYLES)[-1]
+                from mixlogic.theme import current_theme
+                for theme_name in ('light','dark'):
+                    options.appearance.theme_choice.setCurrentIndex(options.appearance.theme_choice.findData(theme_name))
+                    options.apply_button.click()
+                    app.processEvents()
+                    assert current_theme()==theme_name
+                    assert window.store.load_session()['appearance']['theme']==theme_name
                 options.close()
                 about = AboutDialog(QIcon(icon_path), icon_path, window)
                 assert about.copy_btc_button.text() == "Copy BTC address"
                 about.close()
                 window.close()
             except Exception:
+                import traceback
+                from pathlib import Path
+                Path(base_dir(),'.smoke-test-error.txt').write_text(traceback.format_exc(),encoding='utf-8')
                 app.exit(1)
         QTimer.singleShot(250, check_startup)
     sys.exit(app.exec())

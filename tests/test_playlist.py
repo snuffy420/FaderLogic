@@ -76,7 +76,8 @@ class PlaylistExportTests(unittest.TestCase):
         export_m3u8(target, original)
         self.assertTrue(is_mixlogic_playlist(target))
         restored = build_library(target, None)
-        self.assertEqual(restored, original)
+        self.assertEqual([{key: track[key] for key in original[index]} for index, track in enumerate(restored)], original)
+        self.assertTrue(all(track["metadata_checked"] and not track["metadata_issues"] for track in restored))
 
     def test_rekordbox_text_reads_utf16_and_utf8_without_confusing_them(self):
         text = "Track Title\tArtist\tBPM\tKey\nDéjà Vu\tBeyoncé\t127.5\t9A\n"

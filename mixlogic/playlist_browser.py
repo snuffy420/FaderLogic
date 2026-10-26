@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QVBoxLayout,
 )
 
-from .theme import COLORS
+from .theme import COLORS, style_widget
 
 
 class PlaylistBrowser(QFrame):
@@ -19,7 +19,7 @@ class PlaylistBrowser(QFrame):
         super().__init__(parent)
         self.setObjectName("playlistBrowser")
         self.setFixedWidth(230)
-        self.setStyleSheet(f"""
+        style_widget(self,f"""
             QFrame#playlistBrowser {{ background: {COLORS['panel']};
                 border: 1px solid {COLORS['border']}; border-radius: 8px; }}
             QLabel, QLineEdit, QListWidget, QPushButton {{ font-size: 9pt; }}
@@ -33,7 +33,7 @@ class PlaylistBrowser(QFrame):
         layout.setContentsMargins(10, 10, 10, 10)
         heading = QHBoxLayout()
         title = QLabel("Playlists")
-        title.setStyleSheet(f"font-weight: bold; color: {COLORS['cyan']};")
+        style_widget(title,f"font-weight: bold; color: {COLORS['cyan']};")
         heading.addWidget(title)
         heading.addStretch()
         close = QPushButton("×")
@@ -52,10 +52,10 @@ class PlaylistBrowser(QFrame):
         layout.addWidget(self.list, 1)
         self.empty = QLabel("Import a Rekordbox playlist once.\nChoose it here whenever you need it.")
         self.empty.setWordWrap(True)
-        self.empty.setStyleSheet(f"color: {COLORS['muted']}; font-size: 8pt;")
+        style_widget(self.empty,f"color: {COLORS['muted']}; font-size: 8pt;")
         layout.addWidget(self.empty)
         self.linked_folder_label = QLabel("Folder: not linked")
-        self.linked_folder_label.setStyleSheet(f"color: {COLORS['muted']}; font-size: 8pt;")
+        style_widget(self.linked_folder_label,f"color: {COLORS['muted']}; font-size: 8pt;")
         layout.addWidget(self.linked_folder_label)
         add = QPushButton("+ Import playlist")
         add.clicked.connect(self.importRequested)

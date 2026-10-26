@@ -21,11 +21,13 @@ def strings(value):
 
 
 def main():
-    executable = ROOT / "dist/MixLogic.exe"
+    executable = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "dist/MixLogic.exe"
     archive = CArchiveReader(str(executable))
     filenames = {PureWindowsPath(name).name.lower() for name in archive.toc}
     if filenames & {"icuuc.dll", "icuin.dll", "icudt78.dll"}:
         raise RuntimeError("Unexpected third-party ICU DLL in the public bundle")
+    if any('qtquick' in name or 'qtqml' in name for name in filenames):
+        raise RuntimeError("Retired Qt Quick/3D runtime found in bundle")
     modules = archive.open_embedded_archive("PYZ.pyz")
     if __version__ not in modules.extract("mixlogic").co_consts:
         raise RuntimeError("Packaged version mismatch")
@@ -44,7 +46,7 @@ def main():
     actual = (version.FileVersionMS >> 16, version.FileVersionMS & 65535, version.FileVersionLS >> 16)
     if actual != tuple(map(int, __version__.split("."))):
         raise RuntimeError("Windows version resource mismatch")
-    print(f"Verified MixLogic {__version__} public executable and Windows version resource")
+    print(f"Verified MixLogic {__version__} executable and Windows version resource: {executable.name}")
 
 
 if __name__ == "__main__":

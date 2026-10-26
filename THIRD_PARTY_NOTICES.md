@@ -12,6 +12,7 @@ MixLogic application code and original graphics are GPL-3.0-or-later. Third-part
 | qrcode | 8.2 | BSD 3-Clause; [source](https://github.com/lincolnloop/python-qrcode) |
 | Qt Multimedia's FFmpeg libraries | 7.1.5 | LGPL-2.1-or-later for the supplied build, plus component notices; [exact source tag](https://github.com/FFmpeg/FFmpeg/tree/n7.1.5) |
 | PyInstaller bootloader/runtime | 6.18.0 | GPL with the PyInstaller bootloader exception; [source](https://github.com/pyinstaller/pyinstaller/tree/v6.18.0) |
+| Inno Setup installer runtime | 7.1.0 | Inno Setup license, included as `licenses/InnoSetup-LICENSE.txt`; [source](https://github.com/jrsoftware/issrc/tree/is-7_1_0) |
 
 `licenses/runtime-manifest.json` records the installed package versions, the bundled FFmpeg version/license/configuration and SHA-256 hashes of its audio libraries. The audio libraries come from the unmodified Qt runtime wheel; MixLogic does not bundle a separate FFmpeg command-line executable. The recorded configuration does not enable GPL FFmpeg components.
 

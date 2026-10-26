@@ -388,6 +388,25 @@ class SavedPlaylistTests(unittest.TestCase):
         self.assertEqual(camelot.active_chart_name, "Chart 2 (harmonic transitions)")
         self.assertTrue(all("Mixed In Key" not in name for name in camelot.CHART_CHOICES))
 
+    def test_unknown_import_shows_inline_without_popup_or_default_key(self):
+        source = self.root / "Unverified.m3u8"
+        metadata = self.root / "Unverified.txt"
+        source.write_text("#EXTM3U\n#EXTINF:-1,Unverified\nmissing.wav\n", encoding="utf-8")
+        metadata.write_text("Track Title\tArtist\tBPM\tKey\nUnverified\tArtist\t\t\n", encoding="utf-16")
+        with patch("mixlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), (str(metadata), "")]), \
+             patch("mixlogic.main_window.QMessageBox.warning") as notice:
+            self.window.import_playlist()
+            notice.assert_not_called()
+        self.assertEqual(self.window.lib_table.item(0, 2).text(), "Unknown")
+        self.assertEqual(self.window.lib_table.item(0, 3).text(), "Unknown")
+        self.assertIsNone(self.window.wheel.selected_key)
+        self.assertFalse(self.window.wheel._status)
+        self.assertTrue(self.window.btn_metadata.isVisible())
+        self.assertEqual(self.window.lib_table.verticalHeaderItem(0).text(), "!")
+        self.assertIn("Unknown", self.window.lbl_relation.text())
+        self.window.add_selected_to_set()
+        self.assertEqual(self.window.lbl_set_time.text(), "Set length: Unknown")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@
 import json
 import os
 import sqlite3
+from . import playlist
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -44,6 +45,31 @@ class LibraryStore:
             return None
         entry = dict(row)
         entry["tracks"] = json.loads(entry["tracks"])
+        if any(not track.get("metadata_checked") for track in entry["tracks"]):
+            source_folder = self.directory / "sources" / playlist_id
+            metadata_file = source_folder / "metadata.txt"
+            entries = []
+            if metadata_file.is_file():
+                try:
+                    entries = playlist.parse_rekordbox_txt(metadata_file)
+                except (OSError, UnicodeError, ValueError):
+                    pass
+            validated = playlist.revalidate_tracks(entry["tracks"], entries)
+            # Original M3U durations, unlike the old 03:30 fallback, are sourced.
+            source_file = source_folder / "playlist.m3u8"
+            if source_file.is_file():
+                try:
+                    originals = playlist.parse_m3u8(source_file)
+                    if len(originals) == len(validated):
+                        for track, original in zip(validated, originals):
+                            if original["duration"] > 0:
+                                track["duration"] = original["duration"]
+                                track["time"] = playlist.format_duration(original["duration"])
+                                track["metadata_issues"] = [issue for issue in track["metadata_issues"] if issue != "Duration unavailable"]
+                except (OSError, ValueError, UnicodeError):
+                    pass
+            entry["tracks"] = validated
+            self.update_tracks(playlist_id, validated, entry["linked_folder"])
         return entry
 
     def find_import(self, m3u8, txt):
@@ -102,7 +128,25 @@ class LibraryStore:
 
     def load_session(self):
         row = self.conn.execute("SELECT value FROM state WHERE key = 'session'").fetchone()
-        return json.loads(row[0]) if row else {}
+        state = json.loads(row[0]) if row else {}
+        if any(not track.get("metadata_checked") for track in state.get("active_set", [])):
+            by_path = {}
+            for saved in self.list_playlists():
+                for track in self.get_playlist(saved["id"])["tracks"]:
+                    by_path.setdefault(os.path.normcase(track["path"]), []).append(track)
+            for index, track in enumerate(state["active_set"]):
+                if track.get("metadata_checked"):
+                    continue
+                matches = by_path.get(os.path.normcase(track["path"]), [])
+                fingerprints = {(t["key"], t["bpm"], t["artist"], t["time"]) for t in matches}
+                if len(fingerprints) == 1:
+                    verified = dict(matches[0], title=track["title"], path=track["path"])
+                else:
+                    verified = playlist.checked_metadata(dict(track, duration=0), {},
+                                                          "Saved metadata cannot be verified; reimport the matching Rekordbox exports")
+                state["active_set"][index] = verified
+            self.save_session(state)
+        return state
 
     def save_session(self, session):
         with self.conn:

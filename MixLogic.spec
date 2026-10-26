@@ -25,7 +25,7 @@ a = Analysis(
     runtime_hooks=[],
     # Pillow has optional integrations with notebook/array stacks that this app
     # does not use. Keep the portable runtime focused on the actual GUI/QR needs.
-    excludes=["tkinter", "IPython", "numpy", "matplotlib", "pytest"],
+    excludes=["tkinter", "IPython", "numpy", "matplotlib", "pytest", "PyQt6.QtQml", "PyQt6.QtQuick", "PyQt6.QtQuickWidgets", "PyQt6.QtQuick3D", "PyQt6.QtOpenGL"],
     cipher=block_cipher,
 )
 os.environ["PATH"] = original_path

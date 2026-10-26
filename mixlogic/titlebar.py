@@ -3,7 +3,7 @@ from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QWidget
 
-from .theme import COLORS
+from .theme import COLORS, style_widget
 
 
 class TitleBar(QWidget):
@@ -33,7 +33,7 @@ class TitleBar(QWidget):
             layout.addStretch()
             self.add_window_controls()
 
-        self.setStyleSheet(
+        style_widget(self,
             f"QWidget#titleBar {{ background-color: #0B0C0E; }}"
             f"QLabel#titleName {{ color: {COLORS['text']}; font-size: 10pt; font-weight: 700; }}"
             f"QLabel#titleVersion {{ color: {COLORS['muted']}; font-size: 9pt; }}"

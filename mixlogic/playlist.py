@@ -3,6 +3,8 @@ import os
 import re
 import json
 import codecs
+import math
+import ntpath
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
@@ -11,6 +13,82 @@ from .camelot import normalize_key
 AUDIO_EXTENSIONS = (".wav", ".mp3", ".flac", ".m4a", ".aiff", ".aif")
 MIXLOGIC_HEADER = "#MIXLOGIC-PLAYLIST:1"
 MIXLOGIC_TRACK = "#MIXLOGIC-TRACK:"
+UNKNOWN = "Unknown"
+
+
+def valid_bpm(value):
+    try:
+        number = float(value)
+        return number if math.isfinite(number) and number > 0 else None
+    except (ValueError, TypeError):
+        return None
+
+
+def time_seconds(value):
+    try:
+        parts = str(value).split(":")
+        if len(parts) not in (2, 3):
+            return None
+        numbers = [int(part) for part in parts]
+        if any(n < 0 for n in numbers) or any(n >= 60 for n in numbers[1:]):
+            return None
+        seconds = sum(n * 60 ** index for index, n in enumerate(reversed(numbers)))
+        return seconds if seconds > 0 else None
+    except (ValueError, TypeError):
+        return None
+
+
+def track_filename(value):
+    """Recognize Windows playlist separators even when the source runs on Unix."""
+    return ntpath.basename(str(value).replace("/", "\\"))
+
+
+def metadata_issues(track):
+    issues = list(track.get("metadata_issues", []))
+    if not normalize_key(track.get("key")):
+        issues.append("Key unavailable or invalid")
+    if valid_bpm(track.get("bpm")) is None:
+        issues.append("BPM unavailable or invalid")
+    if time_seconds(track.get("time")) is None:
+        issues.append("Duration unavailable")
+    if not track.get("artist") or str(track.get("artist")).strip().casefold() in ("unknown", "unknown artist"):
+        issues.append("Artist unavailable")
+    if not track.get("title") or str(track.get("title")).strip().casefold() == "unknown":
+        issues.append("Title unavailable")
+    return list(dict.fromkeys(issues))
+
+
+def display_metadata(track):
+    """Consistent placeholders in every table; known values remain untouched."""
+    def text(value):
+        value = str(value or "").strip()
+        return UNKNOWN if not value or value.casefold() in ("unknown", "unknown artist") else value
+    key = normalize_key(track.get("key"))
+    from .camelot import REAL_KEYS
+    return [text(track.get("title")), text(track.get("artist")),
+            text(track.get("bpm")) if valid_bpm(track.get("bpm")) else UNKNOWN,
+            key or UNKNOWN, REAL_KEYS.get(key, UNKNOWN),
+            text(track.get("time")) if time_seconds(track.get("time")) else UNKNOWN]
+
+
+def checked_metadata(track, values, reason=None):
+    """Keep missing fields explicit; this validates supplied metadata, not the audio's musical key."""
+    result = dict(track)
+    bpm = valid_bpm(values.get("bpm"))
+    result["bpm"] = str(bpm) if bpm is not None else UNKNOWN
+    result["key"] = normalize_key(values.get("key")) or UNKNOWN
+    result["artist"] = str(values.get("artist") or "Unknown Artist")
+    duration = track.get("duration")
+    if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
+        duration = time_seconds(values.get("time")) or 0
+    result["duration"] = duration
+    result["time"] = format_duration(duration) if duration > 0 else UNKNOWN
+    result["metadata_checked"] = True
+    result["metadata_issues"] = list(values.get("metadata_issues", []))
+    if reason:
+        result["metadata_issues"].append(reason)
+    result["metadata_issues"] = metadata_issues(result)
+    return result
 
 
 def is_mixlogic_playlist(path):
@@ -49,6 +127,11 @@ def _local_track_path(value, playlist_dir):
         value = url2pathname(parts.path)
         if parts.netloc and parts.netloc.lower() != "localhost":
             value = "//" + parts.netloc + "/" + value.lstrip("/\\")
+    if os.name != "nt":
+        value = value.replace("\\", "/")
+        if re.match(r"^/?[A-Za-z]:/", value) or value.startswith("//"):
+            # Keep foreign absolute paths identifiable until the user relinks.
+            return value.lstrip("/") if re.match(r"^/[A-Za-z]:/", value) else value
     if not os.path.isabs(value):
         value = os.path.join(playlist_dir, value)
     return os.path.normpath(os.path.abspath(value))
@@ -88,8 +171,8 @@ def parse_m3u8(path):
             tracks.append({
                 "title": title,
                 "path": track_path,
-                "filename": os.path.basename(track_path),
-                "duration": max(0.0, duration),
+                "filename": track_filename(track_path),
+                "duration": duration if math.isfinite(duration) and duration > 0 else 0.0,
             })
             if pending_metadata is not None:
                 tracks[-1]["mixlogic"] = pending_metadata
@@ -101,7 +184,7 @@ def parse_m3u8(path):
 def parse_rekordbox_txt(path):
     """Parse a Rekordbox 'Export as text' file into a list of entries."""
     content = read_text_file(path)
-    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+    lines = [ln for ln in content.splitlines() if ln.strip()]
     if not lines:
         return []
 
@@ -111,54 +194,62 @@ def parse_rekordbox_txt(path):
         return next((i for i, h in enumerate(headers) if h in names), None)
 
     key_idx = find_col("key", "tonality")
-    bpm_idx = find_col("bpm", "tempo")
+    bpm_idx = find_col("bpm", "tempo", "b.p.m.", "b.p.m")
     title_idx = find_col("track title", "title", "name")
     artist_idx = find_col("artist", "performer")
+    time_idx = find_col("time", "duration", "length")
+    path_idx = find_col("location", "file path", "path", "filename", "file name")
     tab_delimited = any(i is not None for i in (key_idx, bpm_idx, title_idx))
     start = 1 if tab_delimited else 0
 
     entries = []
     for line in lines[start:]:
         cols = line.split("\t")
-        key = bpm = title = artist = None
+        key = bpm = title = artist = duration_text = location = None
         if tab_delimited:
             if key_idx is not None and key_idx < len(cols):
                 key = normalize_key(cols[key_idx])
             if bpm_idx is not None and bpm_idx < len(cols):
-                try:
-                    bpm = float(cols[bpm_idx].strip())
-                except ValueError:
-                    pass
+                bpm = valid_bpm(cols[bpm_idx].strip())
             if title_idx is not None and title_idx < len(cols):
                 title = cols[title_idx].strip()
             if artist_idx is not None and artist_idx < len(cols):
                 artist = cols[artist_idx].strip()
-        if not key:
-            for col in cols:
-                norm = normalize_key(col)
-                if norm:
-                    key = norm
-                    break
-        if not bpm:
-            match = re.search(r"\b(\d{2,3}(?:\.\d{1,2})?)\s*(?:BPM)?\b", line, re.IGNORECASE)
-            if match:
-                bpm = float(match.group(1))
-        entries.append({"raw": line.lower(), "title": title, "artist": artist, "key": key, "bpm": bpm})
+            if time_idx is not None and time_idx < len(cols):
+                duration_text = cols[time_idx].strip()
+            if path_idx is not None and path_idx < len(cols):
+                location = cols[path_idx].strip()
+        entries.append({"title": title, "artist": artist, "key": key, "bpm": bpm,
+                        "time": duration_text, "location": location})
     return entries
 
 
-def _match_entry(track, entries, index):
-    clean_title = _strip_leading_number(track["title"])
-    clean_file = _strip_leading_number(os.path.splitext(track["filename"])[0])
+def _match_entry(track, entries, index=None):
+    def identity(value):
+        return " ".join(str(value or "").casefold().split())
+    names = {identity(track.get("title")), identity(os.path.splitext(track_filename(track.get("path") or track.get("filename", "")))[0])} - {""}
+    matches = []
     for entry in entries:
-        t = (entry["title"] or "").strip().lower()
-        if t and (t in clean_title or (clean_title and clean_title in t) or t in clean_file):
-            return entry
-        if clean_file and (clean_file in entry["raw"] or (clean_title and clean_title in entry["raw"])):
-            return entry
-    if index < len(entries):
-        return entries[index]
-    return None
+        title = identity(entry.get("title"))
+        full = identity(f"{entry.get('artist') or ''} - {entry.get('title') or ''}")
+        location = entry.get("location")
+        exact_path = bool(location and identity(str(location).replace("\\", "/")) == identity(str(track.get("path", "")).replace("\\", "/")))
+        if exact_path or (title and (title in names or full in names)):
+            matches.append(entry)
+    # Identical repeated metadata is safe; conflicting matches are not.
+    unique = {tuple(str(entry.get(field) or "") for field in ("title", "artist", "key", "bpm", "time")) for entry in matches}
+    return matches[0] if len(unique) == 1 else None
+
+
+def revalidate_tracks(tracks, entries):
+    result = []
+    for track in tracks:
+        entry = _match_entry(track, entries)
+        # Cached durations from the old fallback path are not proof of length.
+        base = dict(track)
+        base["duration"] = 0
+        result.append(checked_metadata(base, entry or {}, None if entry else "No unique matching TXT metadata; reimport the matching Rekordbox exports"))
+    return result
 
 
 def format_duration(seconds):
@@ -172,31 +263,22 @@ def build_library(m3u8_path, txt_path):
     entries = parse_rekordbox_txt(txt_path) if txt_path else []
     library = []
     for index, track in enumerate(m3u8_tracks):
-        entry = _match_entry(track, entries, index) or {}
+        entry = _match_entry(track, entries, index)
         saved = track.get("mixlogic", {})
         if saved and not txt_path:
-            library.append({
+            base = {
                 "title": str(saved.get("title") or track["title"]),
-                "artist": str(saved.get("artist") or "Unknown Artist"),
-                "bpm": str(saved.get("bpm") or "120.0"),
-                "key": normalize_key(saved.get("key")) or "8A",
                 "duration": track["duration"],
-                "time": str(saved.get("time") or format_duration(track["duration"])),
                 "path": track["path"],
-            })
+            }
+            if saved.get("metadata_checked") is True:
+                library.append(checked_metadata(base, saved))
+            else:
+                library.append(checked_metadata(base, {}, "This older export has no metadata verification record; reimport matching Rekordbox exports"))
             continue
         title = track["title"] or os.path.splitext(track["filename"])[0]
-        bpm = entry.get("bpm")
-        duration = track["duration"]
-        library.append({
-            "title": title,
-            "artist": entry.get("artist") or "Unknown Artist",
-            "bpm": f"{bpm:.1f}" if bpm else "120.0",
-            "key": entry.get("key") or "8A",
-            "duration": duration,
-            "time": format_duration(duration) if duration > 0 else "03:30",
-            "path": track["path"],
-        })
+        library.append(checked_metadata(dict(title=title, duration=track["duration"], path=track["path"]),
+                                        entry or {}, None if entry else "No unique matching TXT metadata; check the M3U8/TXT pair"))
     return library
 
 
@@ -212,7 +294,7 @@ def relink_tracks(tracks, folder):
 
     matched = 0
     for track in tracks:
-        filename = os.path.basename(track["path"]).lower()
+        filename = track_filename(track["path"]).lower()
         clean_title = _strip_leading_number(track["title"])
         found = local.get(filename) or local.get(clean_title)
         if not found and clean_title:
@@ -258,6 +340,8 @@ def export_m3u8(path, tracks):
         display = f"{artist} - {title}" if artist else title
         metadata = {key: str(track[key]) for key in ("bpm", "key", "time") if key in track}
         metadata.update(title=title, artist=artist)
+        metadata["metadata_checked"] = True
+        metadata["metadata_issues"] = metadata_issues(track)
         entries.append((_export_duration(track), display, track_path, metadata))
     if missing:
         examples = "\n".join(missing[:5])

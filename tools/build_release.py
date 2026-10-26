@@ -15,8 +15,8 @@ from mixlogic import __version__
 
 SOURCE_FILES = ("main.py", "MixLogic.spec", "README.md", "CHANGELOG.md", "LICENSE", "COPYRIGHT",
                 "THIRD_PARTY_NOTICES.md", "requirements.txt", "requirements-build.txt", ".gitignore",
-                ".gitattributes", "setup.ps1", "Run MixLogic.cmd")
-SOURCE_DIRS = ("mixlogic", "assets", "tools", "tests", "licenses", ".github")
+                ".gitattributes", ".nojekyll", "setup.ps1", "Run MixLogic.cmd", "run_mixlogic.sh")
+SOURCE_DIRS = ("mixlogic", "assets", "tools", "tests", "licenses", ".github", "installer")
 
 
 def run(*arguments):
@@ -35,8 +35,10 @@ def sevenzip():
 
 def copy_docs(target):
     target.mkdir(parents=True, exist_ok=True)
-    for source in (ROOT / "docs").glob("*.md"):
-        shutil.copy2(source, target / source.name)
+    public_docs=("SOURCE_SETUP.md","BUILDING.md","PUBLISHING.md","VALIDATION.md",
+                 "APPEARANCE.md","RELEASE_NOTES_1.4.0.md","CONTACT_README_BLOCK.md","contact.html")
+    for name in public_docs:
+        shutil.copy2(ROOT/"docs"/name,target/name)
     shutil.copytree(ROOT / "docs/screenshots" / __version__, target / "screenshots" / __version__)
 
 
@@ -75,7 +77,7 @@ def verify_clean_tree(root, portable=False):
 
 def archive(tool, stage, folder, name):
     target = stage / name
-    subprocess.run([tool, "a", "-t7z", "-mx=5", "-mmt=2", "-bd", "-bso0", "-bsp0", str(target), folder.name],
+    subprocess.run([tool, "a", "-tzip" if name.endswith(".zip") else "-t7z", "-mx=5", "-mmt=2", "-bd", "-bso0", "-bsp0", str(target), folder.name],
                    cwd=stage, check=True)
     subprocess.run([tool, "t", "-bd", "-bso0", "-bsp0", str(target)], check=True)
     listing = subprocess.check_output([tool, "l", "-slt", str(target)], text=True)
@@ -114,11 +116,15 @@ def package():
         verify_clean_tree(source)
         output = []
         for folder, name in ((portable, prefix + "-windows-x64-portable.7z"),
-                             (source, prefix + "-source.7z")):
+                             (source, prefix + "-source.7z"),
+                             (source, prefix + "-source.zip")):
             candidate = archive(tool, stage, folder, name)
             final = releases / name
             os.replace(candidate, final)
             output.append(final)
+        setup = releases / (prefix + "-windows-x64-setup.exe")
+        if setup.is_file():
+            output.append(setup)
         github_base = ROOT / "GitHub"
         github_base.mkdir(exist_ok=True)
         github = github_base / prefix
@@ -157,6 +163,7 @@ def main():
         run("-m", "PyInstaller", "--clean", "--noconfirm", "MixLogic.spec")
         run("tools/check_bundle.py")
         run("tools/smoke_test_exe.py", "dist/MixLogic.exe")
+        run("tools/build_installer.py")
     package()
 
 
