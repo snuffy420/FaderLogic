@@ -1,32 +1,25 @@
-# MixLogic 1.3.0 validation
+# MixLogic 1.4.0 validation
 
-## Automated coverage
+## Application
 
-Run `python -m unittest discover -s tests -v`. The current suite contains **26 tests**, covering:
+The 57-test source suite covers both charts and all 1,152 directional pairs, accessible palettes including selection, fitted Both labels, independently rendered neighbour borders, all 36 waveform design/mode combinations, FFT bands, metadata Unknown handling, playlist persistence, relinking, ordered exports/reimports, themes, option controls and current-track preview reuse.
 
-- Both supplied relation charts: all 24 starting keys and all 24 destination keys, **1,152 directional pairs** in total. Listed chart cells, alternatives, unlisted pairs and directional differences are checked.
-- M3U8 order and repeated tracks, absolute/relative paths, local file URLs, UTF-8 BOM input, punctuation/non-ASCII filenames and missing-file handling before overwrite.
-- Current exported sets reopening with complete example metadata and exact order, without a TXT prompt.
-- UTF-16 BOM, UTF-16 LE/BE and UTF-8 TXT decoding.
-- Saved-source copies, last-playlist/session restore, update-without-duplicate imports, rename/removal, cancelled/failed imports and earlier database-schema migration.
-- Per-playlist folder restore/reuse, relinking set references without order changes, and retained source metadata after the original export files are removed.
-- Real header boundary dragging, panel-size persistence, independent column visibility and the last-visible-column guard.
-- Set-track preview, chart changes, selection preservation, filtering and reordering.
-- Themed message/rename windows and a BTC copy confirmation that does not resize the dialog.
-- A single main title/header row, aligned right-panel footer, active relink styling and Playlists toggle persistence.
+Native Windows screenshots cover the main UI, both charts, all five wheels, nine waveform designs, all four color modes, Dark/Light, playlist management, metadata, Options, Help, About and Donate. Screenshots use generated original audio and example metadata, never private libraries.
 
-## Compiled application
+Packaged checks exercise startup, playlist toggling, all appearance choices, theme persistence, QR dependencies and clean shutdown in an isolated directory. Bundle inspection checks 1.4.0 application/Windows resources and rejects Qt Quick/QML dependencies and incompatible injected ICU DLLs.
 
-`python tools/smoke_test_exe.py dist/MixLogic.exe` runs a copied executable with temporary state and the offscreen Qt backend. It checks startup, both directions of the playlist-browser toggle, Options/column controls and About donation/QR dependencies.
+## Installer and archives
 
-`python tools/check_bundle.py` verifies the packaged version and feature modules, rejects the incompatible third-party ICU DLL names associated with the earlier QtGui startup failure, and checks the Windows version resource.
+The Inno x64 installer compiled successfully with the verified 1.4.0 EXE and complete payload. The included per-user setup/start/uninstall test refused to run because an existing MixLogic installation is registered on this machine; it was preserved. A live 1.4.0 install/uninstall cycle therefore remains unverified here. The test checks registration/version, full payload, installed.flag, user-profile data storage, executable removal and data retention when run on a machine without an existing registration.
 
-## Layout and screenshots
+Source and portable archives are integrity-tested, checked for one top-level folder and built from allowlisted files. No music, personal playlists, databases, dependency environments or old test EXEs are included. The clean source tree is prepared separately for GitHub upload. SHA-256 checksums accompany each release file.
 
-The 1.3.0 UI was checked at **150% display scaling**, with the browser open and closed at **1100 × 700**, **1280 × 700**, and **1480 × 920**. The default smaller layouts retain at least four complete rows per table. Public screenshots are generated from the current Qt UI using temporary demo WAV audio and example metadata, not private libraries or commercial music.
+## Contact page
 
-## Manual checks kept separate
+Real 1280-pixel desktop and 390-pixel mobile browser viewports were checked for horizontal overflow and captured. Success/error DOM states were also checked with mocked responses; no real message was sent. tools/test_contact.mjs executes the actual script against a simulated DOM/fetch, checking success, service errors, offline/timeout paths, whitespace validation, character count and duplicate-submit protection. No real network submission or message is sent. Live Formspree delivery and GitHub Pages require the author's post-upload check.
 
-These automated checks do not establish official compatibility certification by Rekordbox/AlphaTheta. A live import into the Rekordbox desktop application, subjective audio review and real DJ/player/USB workflows remain manual checks. The official Rekordbox manual documents M3U8 playlist import via File → Import → Import Playlist.
+## Platform and workflow limits
 
-Playlist round-trip tests verify MixLogic's file output and reimport behaviour. They do not export a USB database, transfer Rekordbox cues/beatgrids, render transitions or test every codec/hardware combination.
+Windows x64 is the tested binary target. macOS and Linux setup commands are documented with and without a venv, but those native GUI/audio environments have not been run here. Platform wheel availability and Linux library requirements are referenced in the source guide.
+
+File-format tests validate exact playlist order and MixLogic metadata round-trip. A real import in Rekordbox and DJ player/USB workflows remain manual checks; the project does not claim official certification. It does not render continuous mixes or transfer cue/beatgrid databases. Codec support varies by platform/backend.

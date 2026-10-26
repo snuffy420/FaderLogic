@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#16181c">
+  <meta name="description" content="Get in touch about MixLogic. Questions, feedback, or a quick hello.">
+  <title>Contact · MixLogic</title>
+  <link rel="icon" href="../assets/mixlogic.png" type="image/png">
+  <style>
+    :root{color-scheme:dark;--bg:#16181c;--panel:#1e2127;--well:#121417;--line:#303640;--text:#e4e7ec;--muted:#a3abba;--cyan:#00e5ff;--blue:#2f9bff;--green:#39ff88}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 5%,#12313c66,transparent 48%),radial-gradient(ellipse at 95% 90%,#163d2a66,transparent 45%),var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    a{color:var(--cyan);text-underline-offset:4px}a:hover{color:var(--green)}button,input,textarea{font:inherit}button,a,input,textarea{-webkit-tap-highlight-color:transparent}:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
+    .page{max-width:1100px;margin:auto;padding:36px 28px 22px}.nav{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:inline-flex;align-items:center;gap:12px;color:var(--text);text-decoration:none;font-weight:750;font-size:21px}.brand img{width:42px;height:42px}.nav-link{font-size:14px;color:var(--muted);text-decoration:none}.nav-link span{margin-left:5px}
+    main{display:grid;grid-template-columns:.92fr 1.08fr;gap:76px;align-items:center;padding:76px 0 68px}.intro{position:relative;min-width:0}.tag{display:inline-flex;align-items:center;gap:9px;border:1px solid #2f9bff55;border-radius:100px;padding:5px 12px;font-size:12px;font-weight:650;color:var(--cyan);letter-spacing:.08em;text-transform:uppercase}.tag:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 14px #39ff8866}
+    .hero-icon{display:block;width:108px;height:108px;margin:30px 0 22px;filter:drop-shadow(0 10px 22px #0005)}h1{font-size:clamp(38px,4.8vw,58px);line-height:1.1;letter-spacing:-.045em;margin:0 0 24px;font-weight:780}h1 span{color:var(--cyan)}.intro p{color:var(--muted);max-width:370px;margin:0;font-size:17px}.signal{display:flex;align-items:center;gap:5px;height:42px;margin:35px 0 23px}.signal i{display:block;background:linear-gradient(var(--cyan),var(--green));width:6px;border-radius:8px;opacity:.75}.intro-note{font-size:13px!important;color:#a3abba!important}.intro-note strong{color:var(--text);font-weight:600}
+    .card{min-width:0;background:linear-gradient(145deg,#252a33bb,#1e2127);border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:0 20px 70px #0003;position:relative}.card:before{content:"";position:absolute;left:28px;right:28px;top:-1px;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--green));border-radius:10px}h2{font-size:22px;margin:0 0 4px;letter-spacing:-.025em}.sub{margin:0 0 25px;color:var(--muted);font-size:14px}.field{margin-bottom:18px}label{display:block;font-size:13px;font-weight:650;margin-bottom:7px}.optional{font-weight:400;color:var(--muted);font-size:12px}input,textarea{display:block;width:100%;border:1px solid #343b47;border-radius:9px;background:var(--well);color:var(--text);padding:12px 13px;transition:border-color .15s,box-shadow .15s}input::placeholder,textarea::placeholder{color:#737d8c}input:focus,textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px #00e5ff15}textarea{resize:vertical;min-height:155px;max-height:450px}.counter{text-align:right;font-size:11px;color:var(--muted);margin:5px 1px 0}.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+    a:focus-visible,button:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
+    .send{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:1px solid var(--green);border-radius:9px;background:var(--green);color:#102219;font-weight:750;padding:12px 15px;cursor:pointer;transition:box-shadow .15s,transform .15s}.send:hover:not(:disabled){box-shadow:0 0 22px #39ff8833;transform:translateY(-1px)}.send:disabled{opacity:.65;cursor:wait}.send svg{width:18px;height:18px}.status{min-height:48px;padding-top:12px;font-size:13px;line-height:1.45}.status[data-state=success]{color:var(--green)}.status[data-state=error]{color:#ff9b9b}.private{font-size:11px;color:var(--muted);margin:0}.private a{color:inherit}
+    footer{border-top:1px solid #30364099;padding-top:20px;display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:12px}footer a{color:var(--muted);text-decoration:none}footer strong{color:var(--text);font-weight:600}
+    @media(max-width:800px){main{grid-template-columns:1fr;gap:32px;padding:45px 0}.intro{max-width:550px}.hero-icon{width:76px;height:76px;margin:22px 0 18px}.signal{margin:22px 0 12px}.intro p{max-width:none}.intro-note{display:none}h1 br{display:none}h1 span{white-space:nowrap}.card{padding:24px}}@media(max-width:420px){.page{padding:22px 16px}.card{padding:21px}.nav-link{font-size:12px}.brand{font-size:19px}footer{flex-direction:column;gap:6px}}@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="https://github.com/snuffy420/MixLogic"><img src="../assets/mixlogic.png" alt=""><span>MixLogic</span></a>
+      <a class="nav-link" href="https://github.com/snuffy420/MixLogic">Back to GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="tag">Get in touch</div>
+        <img class="hero-icon" src="../assets/mixlogic.png" alt="MixLogic waveform logo">
+        <h1 id="page-title">Let’s talk<br> <span>MixLogic.</span></h1>
+        <p>Have a question, some feedback, or just want to say hello? Send me a message.</p>
+        <div class="signal" aria-hidden="true"><i style="height:12px"></i><i style="height:22px"></i><i style="height:34px"></i><i style="height:18px"></i><i style="height:42px"></i><i style="height:28px"></i><i style="height:20px"></i><i style="height:36px"></i><i style="height:14px"></i><i style="height:26px"></i><i style="height:38px"></i><i style="height:18px"></i></div>
+        <p class="intro-note">Made by <strong>snuffy420</strong><br>zerØ software</p>
+      </section>
+      <section class="card" aria-labelledby="form-title">
+        <h2 id="form-title">Send a message</h2>
+        <p class="sub">A direct line to the person behind MixLogic.</p>
+        <form id="contactForm" action="https://formspree.io/f/myeekrpy" method="POST">
+          <input type="hidden" name="_subject" value="MixLogic contact">
+          <div class="trap" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+          <div class="field"><label for="name">Name <span class="optional">(optional)</span></label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name"></div>
+          <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></div>
+          <div class="field"><label for="message">Message</label><textarea id="message" name="message" maxlength="5000" required placeholder="What’s on your mind?"></textarea><p class="counter" aria-hidden="true"><span id="count">0</span> / 5,000</p></div>
+          <button class="send" id="submitBtn" type="submit"><span id="buttonText">Send message</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 12 14 0m-6-6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <noscript><p class="private">JavaScript is off. Sending this form opens Formspree’s confirmation page.</p></noscript>
+          <div class="status" id="status" role="status" aria-live="polite" aria-atomic="true"></div>
+          <p class="private">Only the details you enter here are sent through <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a>.</p>
+        </form>
+      </section>
+    </main>
+    <footer><span>© 2026 <strong>zerØ software</strong> · MixLogic</span><a href="https://github.com/snuffy420">Created by snuffy420 ↗</a></footer>
+  </div>
+  <script>
+    const form = document.getElementById('contactForm');
+    const button = document.getElementById('submitBtn');
+    const buttonText = document.getElementById('buttonText');
+    const status = document.getElementById('status');
+    const message = document.getElementById('message');
+    const count = document.getElementById('count');
+    let sending = false;
+    message.addEventListener('input', () => {
+      count.textContent = message.value.length.toLocaleString();
+      message.setCustomValidity(message.value.trim() ? '' : 'Please enter a message.');
+    });
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      message.setCustomValidity(message.value.trim() ? '' : 'Please enter a message.');
+      if (sending || !form.reportValidity()) return;
+      sending = true;
+      button.disabled = true;
+      buttonText.textContent = 'Sending…';
+      status.textContent = '';
+      status.removeAttribute('data-state');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      try {
+        const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' }, signal: controller.signal });
+        if (!response.ok) {
+          let errorText = 'Your message wasn’t sent. Please try again in a moment.';
+          try { const data = await response.json(); if (Array.isArray(data.errors)) errorText = data.errors.map(error => error.message).join(' '); } catch (_) {}
+          throw new Error(errorText);
+        }
+        form.reset();
+        count.textContent = '0';
+        status.dataset.state = 'success';
+        status.textContent = 'Thanks — your message has been sent.';
+      } catch (error) {
+        status.dataset.state = 'error';
+        status.textContent = error.name === 'AbortError' ? 'Delivery could not be confirmed. Please try again later.' : (error.message === 'Failed to fetch' ? 'Couldn’t connect. Check your connection and try again.' : error.message);
+      } finally {
+        clearTimeout(timeout);
+        sending = false;
+        button.disabled = false;
+        buttonText.textContent = 'Send message';
+      }
+    });
+  </script>
+</body>
+</html>
