@@ -11,12 +11,12 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from mixlogic import __version__
+from faderlogic import __version__
 
-SOURCE_FILES = ("main.py", "MixLogic.spec", "README.md", "CHANGELOG.md", "LICENSE", "COPYRIGHT",
+SOURCE_FILES = ("main.py", "FaderLogic.spec", "README.md", "CHANGELOG.md", "LICENSE", "COPYRIGHT",
                 "THIRD_PARTY_NOTICES.md", "requirements.txt", "requirements-build.txt", ".gitignore",
-                ".gitattributes", ".nojekyll", "setup.ps1", "Run MixLogic.cmd", "run_mixlogic.sh")
-SOURCE_DIRS = ("mixlogic", "assets", "tools", "tests", "licenses", ".github", "installer")
+                ".gitattributes", ".nojekyll", "setup.ps1", "Run FaderLogic.cmd", "run_faderlogic.sh")
+SOURCE_DIRS = ("faderlogic", "assets", "tools", "tests", "licenses", ".github", "installer")
 
 
 def run(*arguments):
@@ -36,10 +36,11 @@ def sevenzip():
 def copy_docs(target):
     target.mkdir(parents=True, exist_ok=True)
     public_docs=("SOURCE_SETUP.md","BUILDING.md","PUBLISHING.md","VALIDATION.md",
-                 "APPEARANCE.md","RELEASE_NOTES_1.4.0.md","CONTACT_README_BLOCK.md","contact.html")
+                 "APPEARANCE.md","RELEASE_NOTES_1.4.0.md","CONTACT_README_BLOCK.md","MIGRATING.md","contact.html")
     for name in public_docs:
         shutil.copy2(ROOT/"docs"/name,target/name)
-    shutil.copytree(ROOT / "docs/screenshots" / __version__, target / "screenshots" / __version__)
+    shutil.copytree(ROOT / "docs/screenshots" / __version__, target / "screenshots" / __version__,
+                    ignore=shutil.ignore_patterns('review-*'))
 
 
 def copy_source(target):
@@ -57,13 +58,13 @@ def verify_clean_tree(root, portable=False):
     executable_count = 0
     for path in root.rglob("*"):
         relative = path.relative_to(root)
-        if any(part in {"MixLogic-data", ".venv", "__pycache__", "dist", "backups", ".freebuff"} for part in relative.parts):
+        if any(part in {"FaderLogic-data", "MixLogic-data", ".venv", "__pycache__", "dist", "backups", ".freebuff"} for part in relative.parts):
             raise RuntimeError("Private/generated directory in release: " + str(relative))
         if path.is_file() and path.suffix.lower() in {".db", ".sqlite3", ".m3u8", ".wav", ".mp3", ".pyc"}:
             raise RuntimeError("Private/generated file in release: " + str(relative))
         if path.suffix.lower() == ".exe":
             executable_count += 1
-            if not portable or relative.as_posix() != "MixLogic.exe":
+            if not portable or relative.as_posix() != "FaderLogic.exe":
                 raise RuntimeError("Unexpected executable in release: " + str(relative))
     if executable_count != int(portable):
         raise RuntimeError("Incorrect executable count in release")
@@ -97,11 +98,11 @@ def package():
         raise RuntimeError("Invalid release staging path")
     releases = ROOT / "releases"
     releases.mkdir(exist_ok=True)
-    prefix = f"MixLogic-{__version__}"
+    prefix = f"FaderLogic-{__version__}"
     try:
-        portable = stage / "MixLogic"
+        portable = stage / "FaderLogic"
         portable.mkdir()
-        shutil.copy2(ROOT / "dist/MixLogic.exe", portable / "MixLogic.exe")
+        shutil.copy2(ROOT / "dist/FaderLogic.exe", portable / "FaderLogic.exe")
         for name in ("README.md", "CHANGELOG.md", "LICENSE", "COPYRIGHT", "THIRD_PARTY_NOTICES.md"):
             shutil.copy2(ROOT / name, portable / name)
         for name in ("licenses", "assets"):
@@ -155,14 +156,14 @@ def main():
     os.chdir(ROOT)
     sevenzip()
     if not arguments.package_only:
-        os.environ.pop("MIXLOGIC_BUILD_NAME", None)
-        os.environ.pop("MIXLOGIC_CONSOLE_BUILD", None)
+        os.environ.pop("FADERLOGIC_BUILD_NAME", None)
+        os.environ.pop("FADERLOGIC_CONSOLE_BUILD", None)
         run("tools/collect_licenses.py")
         run("-m", "unittest", "discover", "-s", "tests", "-v")
         run("tools/render_screenshots.py")
-        run("-m", "PyInstaller", "--clean", "--noconfirm", "MixLogic.spec")
+        run("-m", "PyInstaller", "--clean", "--noconfirm", "FaderLogic.spec")
         run("tools/check_bundle.py")
-        run("tools/smoke_test_exe.py", "dist/MixLogic.exe")
+        run("tools/smoke_test_exe.py", "dist/FaderLogic.exe")
         run("tools/build_installer.py")
     package()
 

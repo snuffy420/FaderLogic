@@ -10,10 +10,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFontDatabase
-from mixlogic import camelot
-from mixlogic.dialogs import OptionsDialog
-from mixlogic.main_window import MainWindow
-from mixlogic.theme import STYLESHEET
+from faderlogic import camelot
+from faderlogic.dialogs import OptionsDialog
+from faderlogic.main_window import MainWindow
+from faderlogic.theme import STYLESHEET
 
 
 class RelationUpdateTests(unittest.TestCase):
@@ -28,11 +28,11 @@ class RelationUpdateTests(unittest.TestCase):
 
     def setUp(self):
         camelot.set_active_chart(next(iter(camelot.CHART_CHOICES)))
-        self.cache_patch = patch("mixlogic.main_window.WaveformCache")
+        self.cache_patch = patch("faderlogic.main_window.WaveformCache")
         self.cache_patch.start()
         self.data_dir = Path("build") / ("relation-test-" + uuid4().hex)
         self.data_dir.mkdir(parents=True)
-        self.window = MainWindow(str(self.data_dir), str(Path("assets/mixlogic.ico").resolve()))
+        self.window = MainWindow(str(self.data_dir), str(Path("assets/faderlogic.ico").resolve()))
         self.window.show()
         self.window.resize(1100, 700)
         for _ in range(4):

@@ -6,9 +6,9 @@ from pathlib import Path
 from unittest.mock import patch
 from uuid import uuid4
 
-from mixlogic import playlist, camelot
-from mixlogic.storage import LibraryStore
-from mixlogic.paths import runtime_data_dir
+from faderlogic import playlist, camelot
+from faderlogic.storage import LibraryStore
+from faderlogic.paths import runtime_data_dir
 
 
 class MetadataTests(unittest.TestCase):
@@ -99,16 +99,16 @@ class MetadataTests(unittest.TestCase):
 
     def test_windows_filename_and_foreign_path_can_be_relinked_on_unix(self):
         self.assertEqual(playlist.track_filename(r"D:\Music\Track.wav"), "Track.wav")
-        with patch("mixlogic.playlist.os.name", "posix"):
+        with patch("faderlogic.playlist.os.name", "posix"):
             self.assertEqual(playlist._local_track_path(r"D:\Music\Track.wav", "/tmp"), "D:/Music/Track.wav")
 
     def test_installed_data_uses_user_directory_portable_stays_local(self):
-        app = self.root / "Program Files" / "MixLogic"
+        app = self.root / "Program Files" / "FaderLogic"
         app.mkdir(parents=True)
-        executable = app / "MixLogic.exe"
+        executable = app / "FaderLogic.exe"
         self.assertEqual(runtime_data_dir(executable, True), str(app.resolve()))
         (app / "installed.flag").touch()
         with patch.dict("os.environ", {"LOCALAPPDATA": str(self.root.resolve() / "user-data")}):
             location = runtime_data_dir(executable, True)
-            self.assertEqual(Path(location), self.root.resolve() / "user-data" / "MixLogic")
-        self.assertFalse((app / "MixLogic-data").exists())
+            self.assertEqual(Path(location), self.root.resolve() / "user-data" / "FaderLogic")
+        self.assertFalse((app / "FaderLogic-data").exists())

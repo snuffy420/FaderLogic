@@ -18,19 +18,19 @@ from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QFontDatabase, QIcon
 from PyQt6.QtWidgets import QApplication, QTabWidget
 from PyQt6 import sip
-from mixlogic import __version__, camelot, playlist
-from mixlogic.dialogs import AboutDialog, OptionsDialog, MessageDialog, RenameDialog, StyledMessageBox, MetadataReviewDialog
-from mixlogic.appearance import WHEEL_STYLES, WAVE_STYLES
-from mixlogic.main_window import MainWindow
-from mixlogic.theme import STYLESHEET
-from mixlogic.waveform import compute_bands
+from faderlogic import __version__, camelot, playlist
+from faderlogic.dialogs import AboutDialog, OptionsDialog, MessageDialog, RenameDialog, StyledMessageBox, MetadataReviewDialog
+from faderlogic.appearance import WHEEL_STYLES, WAVE_STYLES
+from faderlogic.main_window import MainWindow
+from faderlogic.theme import STYLESHEET
+from faderlogic.waveform import compute_bands
 
 
 def render_galleries(app,output):
     from PyQt6.QtWidgets import QWidget,QGridLayout,QVBoxLayout,QLabel,QFrame
-    from mixlogic.widgets import CamelotWheelWidget,WaveformWidget
-    from mixlogic.appearance import WAVE_MODES,wheel_legend_html
-    from mixlogic.dance_preview import DANCE_PREVIEW
+    from faderlogic.widgets import CamelotWheelWidget,WaveformWidget
+    from faderlogic.appearance import WAVE_MODES,wheel_legend_html
+    from faderlogic.dance_preview import DANCE_PREVIEW
     camelot.set_active_chart(next(iter(camelot.CHART_CHOICES)))
     def save(widget,name):
         widget.show()
@@ -81,7 +81,7 @@ def main():
         if path.exists():
             QFontDatabase.addApplicationFont(str(path))
     app.setStyleSheet(STYLESHEET)
-    icon_path = str(ROOT / "assets/mixlogic.ico")
+    icon_path = str(ROOT / "assets/faderlogic.ico")
     window = None
     try:
         audio = stage / "demo.wav"
@@ -111,7 +111,7 @@ def main():
         for index, (title, key) in enumerate(names):
             path = stage / (title + " (Demo).wav")
             shutil.copy2(audio, path)
-            tracks.append(dict(title=title + " (Demo)", artist="MixLogic Demo", bpm=f"{124 + index}.0",
+            tracks.append(dict(title=title + " (Demo)", artist="FaderLogic Demo", bpm=f"{124 + index}.0",
                                key=key, duration=60.0, time="01:00", path=str(path)))
             window.cache.put(str(path), bars)
         for name, subset in (("Warmup", tracks[:4]), ("Peak Time", tracks), ("Closing Set", tracks[4:])):
@@ -126,7 +126,7 @@ def main():
         window.active_set = [dict(track) for track in tracks[:6]]
         window._fill_set()
         window.overlap.setValue(15)
-        window.linked_folder = r"C:\Music\MixLogic Demo"
+        window.linked_folder = r"C:\Music\FaderLogic Demo"
         window._refresh_playlist_browser()
         window.btn_playlists.setChecked(True)
         window.resize(1280, 800)

@@ -15,13 +15,13 @@ from PyQt6.QtGui import QFontDatabase, QIcon
 from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QTabWidget
 from PyQt6.QtTest import QTest
 
-from mixlogic import camelot
-from mixlogic.main_window import MainWindow
-from mixlogic.storage import LibraryStore
-from mixlogic.theme import STYLESHEET
-from mixlogic.dialogs import AboutDialog, BTC_ADDRESS, MessageDialog, OptionsDialog, RenameDialog, StyledMessageBox
-from mixlogic.titlebar import TitleBar
-from mixlogic import playlist
+from faderlogic import camelot
+from faderlogic.main_window import MainWindow
+from faderlogic.storage import LibraryStore
+from faderlogic.theme import STYLESHEET
+from faderlogic.dialogs import AboutDialog, BTC_ADDRESS, MessageDialog, OptionsDialog, RenameDialog, StyledMessageBox
+from faderlogic.titlebar import TitleBar
+from faderlogic import playlist
 
 
 class SavedPlaylistTests(unittest.TestCase):
@@ -38,7 +38,7 @@ class SavedPlaylistTests(unittest.TestCase):
         self.root = Path("build") / ("browser-test-" + uuid4().hex)
         self.root.mkdir(parents=True)
         self.windows = []
-        self.cache_patch = patch("mixlogic.main_window.WaveformCache")
+        self.cache_patch = patch("faderlogic.main_window.WaveformCache")
         self.cache_patch.start()
         camelot.set_active_chart(next(iter(camelot.CHART_CHOICES)))
         self.window = self.new_window()
@@ -51,7 +51,7 @@ class SavedPlaylistTests(unittest.TestCase):
         camelot.set_active_chart(next(iter(camelot.CHART_CHOICES)))
 
     def new_window(self):
-        window = MainWindow(str(self.root), str(Path("assets/mixlogic.ico").resolve()))
+        window = MainWindow(str(self.root), str(Path("assets/faderlogic.ico").resolve()))
         self.windows.append(window)
         window.show()
         self.app.processEvents()
@@ -66,7 +66,7 @@ class SavedPlaylistTests(unittest.TestCase):
         metadata = self.root / (name + ".txt")
         source.write_text(f"#EXTM3U\n#EXTINF:333,{title}\nMusic/{name}.mp3\n", encoding="utf-8")
         metadata.write_text(f"Track Title\tArtist\tBPM\tKey\n{title}\tBeyoncé\t{bpm}\t{key}\n", encoding="utf-16")
-        with patch("mixlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), (str(metadata), "")]):
+        with patch("faderlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), (str(metadata), "")]):
             self.window.import_playlist()
         return self.window.active_playlist_id, source, metadata
 
@@ -75,7 +75,7 @@ class SavedPlaylistTests(unittest.TestCase):
         first_track = dict(self.window.library[0])
         second_id, source, metadata = self.import_fixture("Peak Time", "Second", "10B", "132.0")
         second_track = dict(self.window.library[0])
-        copied = self.root / "MixLogic-data" / "sources" / second_id
+        copied = self.root / "FaderLogic-data" / "sources" / second_id
         self.assertEqual((copied / "playlist.m3u8").read_bytes(), source.read_bytes())
         self.assertEqual((copied / "metadata.txt").read_bytes(), metadata.read_bytes())
         self.window.active_set = [second_track, first_track, dict(second_track)]
@@ -89,7 +89,7 @@ class SavedPlaylistTests(unittest.TestCase):
         first_source.unlink()
         first_txt.unlink()
         self.close_window(self.window)
-        with patch("mixlogic.main_window.QFileDialog.getOpenFileName") as file_picker:
+        with patch("faderlogic.main_window.QFileDialog.getOpenFileName") as file_picker:
             restored = self.new_window()
             file_picker.assert_not_called()
         self.assertEqual(restored.active_playlist_id, second_id)
@@ -152,7 +152,7 @@ class SavedPlaylistTests(unittest.TestCase):
 
     def test_reimport_updates_entry_and_keeps_rename(self):
         playlist_id, _, _ = self.import_fixture("Peak Time", key="8A")
-        with patch("mixlogic.main_window.QInputDialog.getText", return_value=("Friday Night", True)):
+        with patch("faderlogic.main_window.QInputDialog.getText", return_value=("Friday Night", True)):
             self.window._rename_playlist(playlist_id)
         updated_id, _, _ = self.import_fixture("Peak Time", key="11B", bpm="135.0")
         self.assertEqual(playlist_id, updated_id)
@@ -166,11 +166,11 @@ class SavedPlaylistTests(unittest.TestCase):
 
     def test_cancel_or_failed_import_keeps_current_playlist(self):
         playlist_id, source, _ = self.import_fixture("Existing")
-        with patch("mixlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), ("", "")]):
+        with patch("faderlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), ("", "")]):
             self.window.import_playlist()
         self.assertEqual(self.window.active_playlist_id, playlist_id)
-        with patch("mixlogic.main_window.QFileDialog.getOpenFileName", return_value=("missing", "")), \
-             patch("mixlogic.main_window.QMessageBox.critical") as error:
+        with patch("faderlogic.main_window.QFileDialog.getOpenFileName", return_value=("missing", "")), \
+             patch("faderlogic.main_window.QMessageBox.critical") as error:
             self.window.import_playlist()
             error.assert_called_once()
         self.assertEqual(self.window.active_playlist_id, playlist_id)
@@ -178,9 +178,9 @@ class SavedPlaylistTests(unittest.TestCase):
 
     def test_relinked_library_paths_survive_restart(self):
         playlist_id, _, _ = self.import_fixture("Relink")
-        with patch("mixlogic.main_window.QFileDialog.getExistingDirectory", return_value="new music"), \
-             patch("mixlogic.main_window.playlist.relink_tracks") as relink, \
-             patch("mixlogic.main_window.QMessageBox.information"):
+        with patch("faderlogic.main_window.QFileDialog.getExistingDirectory", return_value="new music"), \
+             patch("faderlogic.main_window.playlist.relink_tracks") as relink, \
+             patch("faderlogic.main_window.QMessageBox.information"):
             def update(tracks, _folder):
                 tracks[0]["path"] = "relocated/Relink.mp3"
                 return 1
@@ -194,7 +194,7 @@ class SavedPlaylistTests(unittest.TestCase):
 
     def test_each_playlist_remembers_folder_and_reimport_reuses_it(self):
         with patch.object(MainWindow, "_load_waveform"), \
-             patch("mixlogic.main_window.QMessageBox.information"):
+             patch("faderlogic.main_window.QMessageBox.information"):
             first_id, _, _ = self.import_fixture("First", key="8A")
             original = dict(self.window.library[0])
             self.window.active_set = [dict(original), dict(original)]
@@ -202,7 +202,7 @@ class SavedPlaylistTests(unittest.TestCase):
             folder_a.mkdir()
             audio_a = folder_a / "First.mp3"
             audio_a.touch()
-            with patch("mixlogic.main_window.QFileDialog.getExistingDirectory", return_value=str(folder_a)):
+            with patch("faderlogic.main_window.QFileDialog.getExistingDirectory", return_value=str(folder_a)):
                 self.window.relink_folder()
             self.assertEqual([t["path"] for t in self.window.active_set], [str(audio_a), str(audio_a)])
             second_id, _, _ = self.import_fixture("Second", key="10B")
@@ -210,7 +210,7 @@ class SavedPlaylistTests(unittest.TestCase):
             folder_b = (self.root / "Music B").resolve()
             folder_b.mkdir()
             (folder_b / "Second.mp3").touch()
-            with patch("mixlogic.main_window.QFileDialog.getExistingDirectory", return_value=str(folder_b)):
+            with patch("faderlogic.main_window.QFileDialog.getExistingDirectory", return_value=str(folder_b)):
                 self.window.relink_folder()
             self.close_window(self.window)
             self.window = self.new_window()
@@ -219,7 +219,7 @@ class SavedPlaylistTests(unittest.TestCase):
             self.window._activate_playlist(first_id)
             self.assertEqual(self.window.linked_folder, str(folder_a))
             self.assertEqual(self.window.library[0]["path"], str(audio_a))
-            with patch("mixlogic.main_window.QFileDialog.getExistingDirectory", return_value="") as picker:
+            with patch("faderlogic.main_window.QFileDialog.getExistingDirectory", return_value="") as picker:
                 self.window.relink_folder()
                 self.assertEqual(picker.call_args.args[2], str(folder_a))
             self.assertEqual(self.window.linked_folder, str(folder_a))
@@ -309,7 +309,7 @@ class SavedPlaylistTests(unittest.TestCase):
         about.show()
         self.app.processEvents()
         size = about.size()
-        with patch("mixlogic.dialogs.QApplication.clipboard") as clipboard:
+        with patch("faderlogic.dialogs.QApplication.clipboard") as clipboard:
             about.copy_btc_button.click()
             clipboard.return_value.setText.assert_called_once_with(BTC_ADDRESS)
         self.app.processEvents()
@@ -352,16 +352,50 @@ class SavedPlaylistTests(unittest.TestCase):
         second = dict(first, title="Second", key="10B", bpm="132.0")
         self.window.active_set = [second, first, dict(second)]
         target = self.root / "Reopen.m3u8"
-        with patch("mixlogic.main_window.QFileDialog.getSaveFileName", return_value=(str(target), "")):
+        with patch("faderlogic.main_window.QFileDialog.getSaveFileName", return_value=(str(target), "")):
             self.window.export_set()
         self.window.clear_set()
         with patch.object(MainWindow, "_load_waveform"), \
-             patch("mixlogic.main_window.QFileDialog.getOpenFileName", return_value=(str(target), "")) as picker:
+             patch("faderlogic.main_window.QFileDialog.getOpenFileName", return_value=(str(target), "")) as picker:
             self.window.import_playlist()
             picker.assert_called_once()
         self.assertEqual([t["title"] for t in self.window.active_set], ["Second", first["title"], "Second"])
         self.assertEqual([t["key"] for t in self.window.active_set], ["10B", "9A", "10B"])
         self.assertEqual(self.window.store.get_playlist(self.window.active_playlist_id)["source_txt"], "")
+
+    def test_pre_rename_export_imports_without_txt_dialog(self):
+        self.test_exported_set_imports_directly_without_txt_dialog()
+        target = self.root / 'Reopen.m3u8'
+        target.write_text(target.read_text(encoding='utf-8').replace('#FADERLOGIC-', '#MIXLOGIC-'), encoding='utf-8')
+        self.window.clear_set()
+        with patch.object(MainWindow, '_load_waveform'), \
+             patch('faderlogic.main_window.QFileDialog.getOpenFileName', return_value=(str(target), '')) as picker:
+            self.window.import_playlist()
+            picker.assert_called_once()
+        self.assertEqual([t['key'] for t in self.window.active_set], ['10B', '9A', '10B'])
+
+    def test_pre_rename_library_opens_with_session_and_original_waveform_mode(self):
+        identity, _, _ = self.import_fixture('Saved set', key='5A')
+        track = dict(self.window.library[0])
+        self.window.active_set = [track, dict(track)]
+        self.window._fill_set()
+        self.close_window(self.window)
+        current = self.root / 'FaderLogic-data'
+        store = LibraryStore(current)
+        session = store.load_session()
+        session['appearance'] = dict(wheel_style='outline', wave_style='enhanced', wave_mode='mixlogic', theme='dark')
+        store.save_session(session)
+        store.update_tracks(identity, [track], r'D:\Saved Music')
+        store.close()
+        current.rename(self.root / 'MixLogic-data')
+        with patch.object(MainWindow, '_load_waveform'):
+            restored = self.new_window()
+        self.assertEqual(restored.windowTitle(), 'FaderLogic 1.4.0')
+        self.assertEqual(restored.active_playlist_id, identity)
+        self.assertEqual(restored.linked_folder, r'D:\Saved Music')
+        self.assertEqual([t['key'] for t in restored.active_set], ['5A', '5A'])
+        self.assertEqual(restored.appearance_settings()['wave_mode'], 'faderlogic')
+        self.assertEqual(restored.wheel.visual_style, 'outline')
 
     def test_single_titlebar_footer_alignment_and_relink_active_state(self):
         self.assertEqual(len(self.window.findChildren(TitleBar)), 1)
@@ -375,7 +409,7 @@ class SavedPlaylistTests(unittest.TestCase):
         self.window.linked_folder = str(self.root.resolve())
         self.window._refresh_playlist_browser()
         self.assertTrue(self.window.btn_relink.isChecked())
-        with patch("mixlogic.main_window.QFileDialog.getExistingDirectory", return_value=""):
+        with patch("faderlogic.main_window.QFileDialog.getExistingDirectory", return_value=""):
             self.window.btn_relink.click()
         self.assertTrue(self.window.btn_relink.isChecked())
         self.app.processEvents()
@@ -393,8 +427,8 @@ class SavedPlaylistTests(unittest.TestCase):
         metadata = self.root / "Unverified.txt"
         source.write_text("#EXTM3U\n#EXTINF:-1,Unverified\nmissing.wav\n", encoding="utf-8")
         metadata.write_text("Track Title\tArtist\tBPM\tKey\nUnverified\tArtist\t\t\n", encoding="utf-16")
-        with patch("mixlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), (str(metadata), "")]), \
-             patch("mixlogic.main_window.QMessageBox.warning") as notice:
+        with patch("faderlogic.main_window.QFileDialog.getOpenFileName", side_effect=[(str(source), ""), (str(metadata), "")]), \
+             patch("faderlogic.main_window.QMessageBox.warning") as notice:
             self.window.import_playlist()
             notice.assert_not_called()
         self.assertEqual(self.window.lib_table.item(0, 2).text(), "Unknown")

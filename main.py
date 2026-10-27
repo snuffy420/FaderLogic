@@ -1,4 +1,4 @@
-"""Launch MixLogic."""
+"""Launch FaderLogic."""
 import os
 import sys
 
@@ -6,10 +6,10 @@ from PyQt6.QtGui import QColor, QIcon, QPalette
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication
 
-from mixlogic.main_window import MainWindow
-from mixlogic import __version__
-from mixlogic.theme import STYLESHEET
-from mixlogic.paths import runtime_data_dir
+from faderlogic.main_window import MainWindow
+from faderlogic import __version__
+from faderlogic.theme import STYLESHEET
+from faderlogic.paths import runtime_data_dir
 
 
 def resource_path(relative):
@@ -24,14 +24,14 @@ def base_dir():
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("MixLogic")
-    app.setApplicationDisplayName(f"MixLogic {__version__}")
+    app.setApplicationName("FaderLogic")
+    app.setApplicationDisplayName(f"FaderLogic {__version__}")
     palette = app.palette()
     for role in (QPalette.ColorRole.Window, QPalette.ColorRole.Base, QPalette.ColorRole.AlternateBase):
         palette.setColor(role, QColor("#16181C"))
     app.setPalette(palette)
     app.setStyleSheet(STYLESHEET)
-    icon_path = resource_path("assets/mixlogic.ico")
+    icon_path = resource_path("assets/faderlogic.ico")
     app.setWindowIcon(QIcon(icon_path))
     window = MainWindow(base_dir(), icon_path)
     window.showMaximized()
@@ -47,10 +47,10 @@ def main():
                 app.processEvents()
                 assert window.playlist_browser.isVisible() == initial
                 # Check frozen QR/Pillow dependencies and both Options pages.
-                from mixlogic.dialogs import AboutDialog, OptionsDialog
+                from faderlogic.dialogs import AboutDialog, OptionsDialog
                 options = OptionsDialog(window.wheel, icon_path, window)
                 assert ("library", "Artist") in options.column_checks
-                from mixlogic.appearance import WHEEL_STYLES, WAVE_STYLES, WAVE_MODES
+                from faderlogic.appearance import WHEEL_STYLES, WAVE_STYLES, WAVE_MODES
                 options.show()
                 for style in WHEEL_STYLES:
                     options.appearance.wheel_choice.setCurrentIndex(options.appearance.wheel_choice.findData(style))
@@ -65,7 +65,7 @@ def main():
                 options.apply_button.click()
                 assert window.wheel.visual_style == list(WHEEL_STYLES)[-1]
                 assert window.waveform.visual_style == list(WAVE_STYLES)[-1]
-                from mixlogic.theme import current_theme
+                from faderlogic.theme import current_theme
                 for theme_name in ('light','dark'):
                     options.appearance.theme_choice.setCurrentIndex(options.appearance.theme_choice.findData(theme_name))
                     options.apply_button.click()

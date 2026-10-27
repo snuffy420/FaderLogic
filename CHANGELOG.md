@@ -1,8 +1,18 @@
 # Changelog
 
-## 1.4.0 — 2026-10-26
+## 1.4.0 — 2026-10-27
 
 First public release. Earlier 1.x versions were local development/test builds.
+
+### Public name and compatibility
+
+- Rename the application from its private-test name MixLogic to FaderLogic. Keep version 1.4.0.
+- Update the window titles, tooltips, Help, About, export filenames, waveform labels, icons' filenames, source package, launchers, Windows executable metadata, installer, shortcuts, documentation, screenshots and contact page.
+- Write new FaderLogic metadata comments in exported M3U8 files while continuing to read older MixLogic exports without requiring a TXT file. Track order, duplicates and Unknown values are preserved.
+- Copy a previous portable/source library beside the app to FaderLogic-data on first launch, including saved source exports, linked folders, sets and preferences. Leave the original library intact and never merge over an existing FaderLogic library.
+- Discover the previous installed user-data folder when starting the installed FaderLogic copy. Use a consistent SQLite backup, including committed WAL data, and check the copy before activating it.
+- Preserve the original waveform color preference when restoring a pre-rename session.
+- Give FaderLogic its own installer registration, Program Files folder, Start menu entries and optional desktop shortcut. Retain user data after uninstall.
 
 ### Rekordbox import, library and session
 
@@ -18,7 +28,7 @@ First public release. Earlier 1.x versions were local development/test builds.
 
 - Add, reorder, remove and clear tracks; confirm duplicate additions and replacement of an existing set when needed.
 - Export standard UTF-8 M3U8 with the exact set order, including repeated tracks.
-- Include optional MixLogic metadata comments so its exported sets reopen with titles, artists, BPM, keys, duration and order without another TXT file.
+- Include optional FaderLogic metadata comments so its exported sets reopen with titles, artists, BPM, keys, duration and order without another TXT file.
 - Check missing audio paths before export. Audio files and embedded tags are not modified or bundled with the playlist.
 - Calculate estimated set length from track durations and the selected Transition Time overlap.
 - Use explicit Unknown fields and Unknown total length when required duration metadata is missing.
@@ -52,7 +62,7 @@ First public release. Earlier 1.x versions were local development/test builds.
 - Coalesce rapid browsing requests, cancel stale work and keep PCM memory compact.
 - Seek by clicking or dragging in any waveform design.
 - Offer nine designs: Classic bars, Enhanced glow bars, Smooth filled, Spectrogram, Multilayer, Energy segments, Minimal glow line, Split bands bars and Split bands ribbons.
-- Support Normal, RGB, 3-band and MixLogic original-color modes on every design.
+- Support Normal, RGB, 3-band and FaderLogic original-color modes on every design.
 - Use shared-center blue/orange/white 3-band display; reserve separate lanes for explicitly named Split bands designs.
 - Retain original overlapping cyan/orange/pink Classic bars as a saved option.
 - Use measured FFT bands/frequency bins for spectral views; energy labels describe measured intensity rather than guessed song sections.
@@ -75,9 +85,9 @@ First public release. Earlier 1.x versions were local development/test builds.
 
 - Include expanded About/Help, playlist guidance for the saved-library system, both chart/color explanations and source-installation guides.
 - Include optional Bitcoin support with QR, Copy BTC address and a stable confirmation area.
-- Add a MixLogic-themed Formspree contact page, a local SVG README button and GitHub Pages setup instructions.
+- Add a FaderLogic-themed Formspree contact page, a local SVG README button and GitHub Pages setup instructions.
 - Provide detailed Windows, macOS and Linux source setup, including venv and app-local non-venv methods for macOS/Linux.
-- Package Windows x64 portable files inside a nested MixLogic folder, plus source ZIP and 7z archives.
+- Package Windows x64 portable files inside a nested FaderLogic folder, plus source ZIP and 7z archives.
 - Provide a dark logo-themed Inno x64 installer with Program Files default, uninstaller, Add/Remove Programs entry, Start menu and optional desktop shortcut.
 - Store installed app data under the user's profile and preserve it on uninstall; retain portable data alongside the portable app.
 - Include GPL-3.0-or-later licensing, third-party notices and exact dependency provenance/license manifests.

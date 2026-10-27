@@ -1,4 +1,4 @@
-"""Draw the MixLogic icon (a neon ring with a waveform bar) and save assets/mixlogic.ico."""
+"""Draw the FaderLogic icon (a neon ring with a waveform bar) and save assets/faderlogic.ico."""
 import os
 import sys
 
@@ -53,10 +53,10 @@ def main():
     out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
     os.makedirs(out_dir, exist_ok=True)
     big = draw(256)
-    png = os.path.join(out_dir, "mixlogic.png")
+    png = os.path.join(out_dir, "faderlogic.png")
     big.save(png)
     frames = [draw(s) for s in SIZES]
-    ico = os.path.join(out_dir, "mixlogic.ico")
+    ico = os.path.join(out_dir, "faderlogic.ico")
     frames[-1].save(ico)  # Qt writes the largest frame; Pillow-free fallback below
     try:
         from PIL import Image

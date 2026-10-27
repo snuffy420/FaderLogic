@@ -2,7 +2,7 @@
 import unittest
 from pathlib import Path
 
-from mixlogic.playlist import build_library, export_m3u8, is_mixlogic_playlist, parse_m3u8, parse_rekordbox_txt
+from faderlogic.playlist import build_library, export_m3u8, is_faderlogic_playlist, parse_m3u8, parse_rekordbox_txt
 
 
 class PlaylistExportTests(unittest.TestCase):
@@ -74,7 +74,7 @@ class PlaylistExportTests(unittest.TestCase):
         two = dict(path=str(self.second.resolve()), title="夜, Mix", artist="DJ", bpm="132.0", key="10B", time="06:00", duration=360)
         original = [two, one, dict(two)]
         export_m3u8(target, original)
-        self.assertTrue(is_mixlogic_playlist(target))
+        self.assertTrue(is_faderlogic_playlist(target))
         restored = build_library(target, None)
         self.assertEqual([{key: track[key] for key in original[index]} for index, track in enumerate(restored)], original)
         self.assertTrue(all(track["metadata_checked"] and not track["metadata_issues"] for track in restored))

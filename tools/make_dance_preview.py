@@ -3,7 +3,7 @@ import math,random,sys
 from array import array
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
-from mixlogic.waveform import analyze_samples
+from faderlogic.waveform import analyze_samples
 rng=random.Random(128);rate=22050;duration=128;pcm=array('h')
 for n in range(rate*duration):
     t=n/rate;beat=t/(60/128);phase=(beat%1)*(60/128)
@@ -26,5 +26,5 @@ for n in range(rate*duration):
     value=math.tanh(1.6*level*(kick+bass+chord+hats+clap))*.94
     pcm.append(round(value*32767))
 bars=tuple(tuple(round(v,5) for v in row) for row in analyze_samples(pcm))
-(ROOT/'mixlogic/dance_preview.py').write_text('"""Original 128 BPM example, processed with the same 256-bin overview analyzer as tracks.\nGenerated offline by tools/make_dance_preview.py.\n"""\nDANCE_PREVIEW = '+repr(bars)+'\n',encoding='utf8')
+(ROOT/'faderlogic/dance_preview.py').write_text('"""Original 128 BPM example, processed with the same 256-bin overview analyzer as tracks.\nGenerated offline by tools/make_dance_preview.py.\n"""\nDANCE_PREVIEW = '+repr(bars)+'\n',encoding='utf8')
 print('Generated',len(bars),'overview bins using the production analyzer')

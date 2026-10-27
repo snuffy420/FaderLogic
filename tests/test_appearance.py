@@ -12,13 +12,13 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtTest import QTest
-from mixlogic import camelot, playlist
-from mixlogic.appearance import WHEEL_STYLES, WAVE_STYLES, WAVE_MODES, accessible_legend, standard_legend, RELATION_CODES
-from mixlogic.widgets import CamelotWheelWidget, WaveformWidget
-from mixlogic.waveform import spectrum_features, WaveformCache
-from mixlogic.dialogs import OptionsDialog, MetadataReviewDialog
-from mixlogic.main_window import MainWindow
-from mixlogic.theme import STYLESHEET
+from faderlogic import camelot, playlist
+from faderlogic.appearance import WHEEL_STYLES, WAVE_STYLES, WAVE_MODES, accessible_legend, standard_legend, RELATION_CODES
+from faderlogic.widgets import CamelotWheelWidget, WaveformWidget
+from faderlogic.waveform import spectrum_features, WaveformCache
+from faderlogic.dialogs import OptionsDialog, MetadataReviewDialog
+from faderlogic.main_window import MainWindow
+from faderlogic.theme import STYLESHEET
 
 
 class AppearanceTests(unittest.TestCase):
@@ -28,7 +28,7 @@ class AppearanceTests(unittest.TestCase):
         cls.app.setStyleSheet(STYLESHEET)
 
     def setUp(self):
-        from mixlogic.theme import apply_theme
+        from faderlogic.theme import apply_theme
         apply_theme('dark')
         self.root = Path('build') / ('appearance-test-' + uuid4().hex)
         self.root.mkdir(parents=True)
@@ -41,11 +41,11 @@ class AppearanceTests(unittest.TestCase):
         self.app.processEvents()
         shutil.rmtree(self.root)
         camelot.set_active_chart(next(iter(camelot.CHART_CHOICES)))
-        from mixlogic.theme import apply_theme
+        from faderlogic.theme import apply_theme
         apply_theme('dark')
 
     def window(self):
-        w = MainWindow(str(self.root), str(Path('assets/mixlogic.ico').resolve()))
+        w = MainWindow(str(self.root), str(Path('assets/faderlogic.ico').resolve()))
         self.windows.append(w)
         w.show(); self.app.processEvents()
         return w
@@ -94,7 +94,7 @@ class AppearanceTests(unittest.TestCase):
                 for key,label in wheel._detail.items():
                     self.assertEqual(wheel.segment_colours(key)[1].name(), legend[label][1].lower())
                     self.assertEqual(legend[label][0],RELATION_CODES[label])
-                from mixlogic.dialogs import _accessible_help_html
+                from faderlogic.dialogs import _accessible_help_html
                 help_html=_accessible_help_html()
                 self.assertEqual(camelot.active_chart_name,chart)
                 self.assertIn('Energy Boost (+++)',help_html)
@@ -102,7 +102,7 @@ class AppearanceTests(unittest.TestCase):
         wheel.close()
 
     def test_colourblind_all_keys_follow_both_chart_legends_including_selection(self):
-        from mixlogic.appearance import wheel_legend_html
+        from faderlogic.appearance import wheel_legend_html
         wheel=CamelotWheelWidget();wheel.set_visual_style('accessible')
         for chart in camelot.CHART_CHOICES:
             camelot.set_active_chart(chart)
@@ -134,7 +134,7 @@ class AppearanceTests(unittest.TestCase):
                 return super().drawText(*args)
         wheel=CamelotWheelWidget();wheel.resize(600,600);wheel.set_visual_style('accessible')
         wheel.set_label_mode('both');wheel.set_active_key('11A');wheel.show()
-        with patch('mixlogic.widgets.QPainter',RecordingPainter):
+        with patch('faderlogic.widgets.QPainter',RecordingPainter):
             self.app.processEvents();wheel.grab()
         self.assertTrue(recorded)
         texts={row[0] for row in recorded}
@@ -167,7 +167,7 @@ class AppearanceTests(unittest.TestCase):
         wheel.close()
 
     def test_retired_3d_settings_fall_back_without_loading_quick(self):
-        from mixlogic.appearance import clean_appearance
+        from faderlogic.appearance import clean_appearance
         import sys
         for old in ('crystal3d','titanium3d','neon3d'):
             values=clean_appearance(dict(wheel_style=old,wave_style=old,wave_mode='rgb',theme='light'))
@@ -285,11 +285,11 @@ class AppearanceTests(unittest.TestCase):
         dialog.close()
 
     def test_three_band_uses_shared_centreline_and_split_styles_are_explicit(self):
-        from mixlogic.wave_paint import THREE_BAND,SPLIT_STYLES
+        from faderlogic.wave_paint import THREE_BAND,SPLIT_STYLES
         self.assertEqual(THREE_BAND,('#167DFF','#FF9D28','#F2F6FF'))
         self.assertEqual(set(SPLIT_STYLES),{'split_bars','split_ribbon'})
         from PyQt6.QtGui import QImage,QPainter
-        from mixlogic.wave_paint import draw_waveform
+        from faderlogic.wave_paint import draw_waveform
         rows=[(.9,.5,.2)]*40
         combined=QImage(400,90,QImage.Format.Format_ARGB32);combined.fill(Qt.GlobalColor.transparent)
         p=QPainter(combined);draw_waveform(p,400,90,rows,'filled','bands');p.end()
@@ -304,7 +304,7 @@ class AppearanceTests(unittest.TestCase):
 
 
     def test_dance_preview_has_rhythm_and_distinct_sections(self):
-        from mixlogic.dance_preview import DANCE_PREVIEW
+        from faderlogic.dance_preview import DANCE_PREVIEW
         self.assertEqual(len(DANCE_PREVIEW),256)
         self.assertTrue(all(len(row)==28 for row in DANCE_PREVIEW))
         def energy(a,b):return sum(max(row[:3]) for row in DANCE_PREVIEW[a:b])/(b-a)
@@ -315,8 +315,8 @@ class AppearanceTests(unittest.TestCase):
 
 
     def test_appearance_uses_the_loaded_tracks_waveform_without_changing_it(self):
-        from mixlogic.dialogs import AppearancePanel
-        from mixlogic.dance_preview import DANCE_PREVIEW
+        from faderlogic.dialogs import AppearancePanel
+        from faderlogic.dance_preview import DANCE_PREVIEW
         wave=WaveformWidget();wave.set_track('Loaded dance track',list(DANCE_PREVIEW))
         wave.set_progress(.37)
         wheel=CamelotWheelWidget();panel=AppearancePanel(wheel,wave)
@@ -344,7 +344,7 @@ class AppearanceTests(unittest.TestCase):
         dialog.close()
 
     def test_light_theme_preview_apply_restore_and_playback_reference(self):
-        from mixlogic.theme import current_theme,palette_for
+        from faderlogic.theme import current_theme,palette_for
         from PyQt6.QtGui import QPalette
         w=self.window()
         track=dict(title='Theme test',artist='Artist',bpm='128',key='8A',time='04:00',path='missing.wav')

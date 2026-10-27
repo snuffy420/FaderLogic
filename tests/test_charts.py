@@ -2,7 +2,7 @@
 import unittest
 from pathlib import Path
 
-from mixlogic import camelot
+from faderlogic import camelot
 
 
 class ScreenshotChartTests(unittest.TestCase):
