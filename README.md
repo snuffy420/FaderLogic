@@ -355,10 +355,6 @@ Questions, feedback, or a bug to report? Send a private message through the Fade
 
 <a href="https://snuffy420.github.io/FaderLogic/docs/contact.html"><img src="assets/contact-button.svg" width="250" height="48" alt="Contact the FaderLogic developer"></a>
 
-![FaderLogic contact page](docs/screenshots/1.4.0/contact-desktop.png)
-
-The form uses Formspree and sends only the information you enter. For reproducible bugs, include your FaderLogic version, OS and steps. GitHub Pages needs to be enabled for the contact link; the included [publishing guide](docs/PUBLISHING.md) explains that setup.
-
 ## Help, About and support
 
 <table><tr><td><img src="docs/screenshots/1.4.0/about.png" alt="About FaderLogic"></td><td><img src="docs/screenshots/1.4.0/help.png" alt="In-app Help"></td></tr><tr><td><img src="docs/screenshots/1.4.0/metadata.png" alt="Metadata details"></td><td><img src="docs/screenshots/1.4.0/donate.png" alt="Optional Bitcoin support"></td></tr></table>
