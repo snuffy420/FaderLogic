@@ -133,7 +133,29 @@ class NextUpdateTests(unittest.TestCase):
                     if key:
                         wheel_center=w.wheel.mapTo(w,w.wheel.rect().center())
                         control_center=w.btn_key_filter.mapTo(w,w.btn_key_filter.rect().center())
-                        self.assertLessEqual(abs(wheel_center.x()-control_center.x()),1)
+                        self.assertLessEqual(abs(wheel_center.x()-control_center.x()),1,
+                                             (wheel_center,control_center,w.footer_status.geometry(),w.right_footer.geometry()))
                         self.assertGreater(control_center.y(),wheel_center.y())
+                        self.assertIs(w.btn_key_filter.parentWidget(),w.right_footer.parentWidget())
+                        self.assertGreater(control_center.y(),w.splitter.mapTo(w,w.splitter.rect().bottomLeft()).y())
+            finally:w.close()
+
+    def test_metadata_control_stays_compact_on_right_without_moving_key(self):
+        with test_directory() as root:
+            w=MainWindow(root,str(Path('assets/faderlogic.ico').resolve()))
+            try:
+                w.show();w._set_key_filter('5A')
+                for _ in range(4):self.app.processEvents()
+                baseline=[widget.geometry() for widget in (w.wheel,w.lib_table,w.set_table,w.btn_key_filter,w.search,w.right_footer)]
+                for count in (72,930,0,1):
+                    w.library=[dict(title='Track',artist='Unknown',bpm='125',key='5A',time='03:00',path='missing.mp3') for _ in range(count)]
+                    w._refresh_status()
+                    for _ in range(2):self.app.processEvents()
+                    self.assertEqual(w.btn_metadata.width(),100)
+                    self.assertEqual(w.btn_metadata.height(),22)
+                    self.assertEqual([widget.geometry() for widget in (w.wheel,w.lib_table,w.set_table,w.btn_key_filter,w.search,w.right_footer)],baseline)
+                    if count:
+                        self.assertGreater(w.btn_metadata.mapTo(w,w.btn_metadata.rect().topLeft()).x(),
+                                           w.btn_key_filter.mapTo(w,w.btn_key_filter.rect().topRight()).x())
             finally:w.close()
 

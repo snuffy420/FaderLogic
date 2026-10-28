@@ -2,8 +2,10 @@
 
 ## 1.4.2 - 2026-10-28
 
+- Keep the Metadata review button compact at a fixed width on the right side of the footer beside Search. Reserve its space while hidden so importing tracks with missing fields cannot enlarge the button or shift the key control. Verify with 1, 72 and 930 flagged tracks.
+
 - Release the wheel filtering, Behavior sorting controls and detailed waveform introduced in the 1.4.1 review build.
-- Center the active key-filter control immediately beneath the wheel and reserve its height and width while hidden, keeping the wheel, tables and footer stable when a key is selected or cleared.
+- Center the active key-filter control in the bottom footer beneath the wheel column and reserve its height and width while hidden, keeping the wheel, tables and footer stable when a key is selected or cleared.
 - Replace the sorting-option descriptions with short, generic explanations. Keep detailed supported-prefix examples in Help.
 - Refresh the README, in-app Help, appearance/source/build/publishing guides and screenshots for 1.4.2. Preserve beginner macOS/Linux setup with and without virtual environments.
 - Provide the themed Windows x64 installer, portable ZIP and 7z, source ZIP and 7z, SHA-256 checksums and a clean GitHub upload folder. Both portable formats contain a nested FaderLogic folder.

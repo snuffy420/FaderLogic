@@ -19,9 +19,11 @@ Previously tested under the name MixLogic. The current release is **FaderLogic 1
 
 ### New in 1.4.2
 
+The **Metadata** review button stays compact beside Search on the right. Its width is fixed even when many tracks need review, and showing or clearing it does not shift the key filter or workspace.
+
 Version 1.4.2 adds clickable wheel filtering, independent title-sorting preferences and a detailed audio waveform.
 
-- **Clickable wheel:** click an actual highlighted Camelot wedge to filter the library to that exact key. A brighter fill, dashed white inset and white dot mark the active filter without changing its relation colour. Click that wedge again or **Key … ×** centered beneath the wheel to clear it. The colour-blind wheel includes the same visible marker alongside its patterns and codes. Text search and key filtering work together; switching saved playlists clears the key filter. Space beneath the wheel stays reserved, so the workspace does not shift when the control appears or disappears.
+- **Clickable wheel:** click an actual highlighted Camelot wedge to filter the library to that exact key. A brighter fill, dashed white inset and white dot mark the active filter without changing its relation colour. Click that wedge again or **Key … ×** centered in the bottom footer beneath the wheel column to clear it. The colour-blind wheel includes the same visible marker alongside its patterns and codes. Text search and key filtering work together; switching saved playlists clears the key filter. Space in the footer stays reserved, so the workspace does not shift when the control appears or disappears.
 - **Behavior options:** two independent, remembered checkboxes under **Options → Behavior** ignore leading punctuation and/or track numbers when sorting Title. Both start off. For example, `- Zhu` can sort under Z, and `01 Title`, `01. Title`, `02 - Title` or `01_Title` can sort under Title. Numeric prefixes accept zero-padded two/three-digit counters followed by whitespace, or one to three digits followed by `.`, `-`, `_` or `)`. Meaningful numeric titles such as `1999`, `99 Luftballons` and `2 Unlimited` stay intact. Enable both settings for combined prefixes such as `- 02 - Title`.
 - **Detailed audio waveform:** a continuous signed audio envelope with fine transient detail, measured from decoded samples. Select **Detailed audio waveform** under **Options → Appearance**, choose Normal, RGB, 3-band or FaderLogic original colours, and click **Apply**. RGB blends measured frequency energies; 3-band layers blue bass, orange mids and white highs around a shared centreline. Separate lanes remain exclusive to the Split bands designs. All earlier non-3D styles remain available.
 
@@ -30,6 +32,8 @@ Wheel filtering keeps the reference key and its harmonic highlights in place unt
 ![Behavior options in version 1.4.2](docs/screenshots/1.4.2/options-behavior.png)
 
 ![Actual wheel filter and detailed waveform in version 1.4.2](docs/screenshots/1.4.2/key-filter-detailed.png)
+
+![Compact Metadata control on the right and key filter centered in the footer](docs/screenshots/1.4.2/metadata-footer.png)
 
 ### Release downloads
 

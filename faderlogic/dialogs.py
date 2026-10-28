@@ -608,8 +608,8 @@ in the colour key when <i>Show all variations</i> is enabled.</p>
 The filtered wedge gets a brighter fill, a dashed white inset outline and a white dot; its relation colour stays intact.
 On the colour-blind wheel the same filter marker supplements the relation patterns and codes.
 The reference track and its compatibility highlights stay unchanged until you choose another track.
-Click the same wedge again to deselect, or click <b>Key … ×</b> centered beneath the wheel.
-Its space stays reserved so the layout does not shift when the filter appears or disappears.
+Click the same wedge again to deselect, or click <b>Key … ×</b> centered in the bottom footer beneath the wheel column.
+Its footer space stays reserved so the layout does not shift when the filter appears or disappears.
 Search and the key filter work together. Clear both to show the full library. Switching saved playlists clears the key filter.
 Filtering and sorting never rearrange your built set or exported order.</p>
 
