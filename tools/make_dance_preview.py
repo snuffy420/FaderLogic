@@ -25,6 +25,6 @@ for n in range(rate*duration):
     if 64<=t<80:clap+=.25*(t-64)/16*math.exp(-(beat%.25)*(60/128)*55)*noise
     value=math.tanh(1.6*level*(kick+bass+chord+hats+clap))*.94
     pcm.append(round(value*32767))
-bars=tuple(tuple(round(v,5) for v in row) for row in analyze_samples(pcm))
+bars=tuple(tuple(round(v,5) for v in row[:28]) + (tuple(tuple(round(v,5) for v in pair) for pair in row[28]),) for row in analyze_samples(pcm))
 (ROOT/'faderlogic/dance_preview.py').write_text('"""Original 128 BPM example, processed with the same 256-bin overview analyzer as tracks.\nGenerated offline by tools/make_dance_preview.py.\n"""\nDANCE_PREVIEW = '+repr(bars)+'\n',encoding='utf8')
 print('Generated',len(bars),'overview bins using the production analyzer')

@@ -36,7 +36,7 @@ def sevenzip():
 def copy_docs(target):
     target.mkdir(parents=True, exist_ok=True)
     public_docs=("SOURCE_SETUP.md","BUILDING.md","PUBLISHING.md","VALIDATION.md",
-                 "APPEARANCE.md","RELEASE_NOTES_1.4.0.md","CONTACT_README_BLOCK.md","MIGRATING.md","contact.html")
+                 "APPEARANCE.md","RELEASE_NOTES_1.4.0.md","RELEASE_NOTES_1.4.2.md","CONTACT_README_BLOCK.md","MIGRATING.md","contact.html")
     for name in public_docs:
         shutil.copy2(ROOT/"docs"/name,target/name)
     shutil.copytree(ROOT / "docs/screenshots" / __version__, target / "screenshots" / __version__,
@@ -117,6 +117,7 @@ def package():
         verify_clean_tree(source)
         output = []
         for folder, name in ((portable, prefix + "-windows-x64-portable.7z"),
+                             (portable, prefix + "-windows-x64-portable.zip"),
                              (source, prefix + "-source.7z"),
                              (source, prefix + "-source.zip")):
             candidate = archive(tool, stage, folder, name)

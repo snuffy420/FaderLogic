@@ -172,7 +172,7 @@ class AppearanceTests(unittest.TestCase):
         for old in ('crystal3d','titanium3d','neon3d'):
             values=clean_appearance(dict(wheel_style=old,wave_style=old,wave_mode='rgb',theme='light'))
             self.assertEqual(values,dict(wheel_style='classic',wave_style='classic',wave_mode='rgb',theme='light'))
-        self.assertEqual(len(WHEEL_STYLES),5);self.assertEqual(len(WAVE_STYLES),9)
+        self.assertEqual(len(WHEEL_STYLES),5);self.assertEqual(len(WAVE_STYLES),10)
         self.assertFalse(any(name.startswith(('PyQt6.QtQuick','PyQt6.QtQml')) for name in sys.modules))
 
     def test_missing_row_markers_follow_library_sorting(self):
@@ -306,7 +306,7 @@ class AppearanceTests(unittest.TestCase):
     def test_dance_preview_has_rhythm_and_distinct_sections(self):
         from faderlogic.dance_preview import DANCE_PREVIEW
         self.assertEqual(len(DANCE_PREVIEW),256)
-        self.assertTrue(all(len(row)==28 for row in DANCE_PREVIEW))
+        self.assertTrue(all(len(row)==29 and len(row[28])==16 for row in DANCE_PREVIEW))
         def energy(a,b):return sum(max(row[:3]) for row in DANCE_PREVIEW[a:b])/(b-a)
         self.assertGreater(energy(160,224),energy(96,128)*2)
         self.assertGreater(max(row[0] for row in DANCE_PREVIEW[160:224]),.5)

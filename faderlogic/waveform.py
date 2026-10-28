@@ -119,7 +119,17 @@ def analyze_samples(samples, num_bars=NUM_BARS):
             center = int(start + (end - start) * fraction)
             offset = max(0, center - FFT_SIZE // 2)
             windows.append(spectrum_features(samples[offset:offset + FFT_SIZE]))
-        bars.append(tuple(max(feature[j] for feature in windows) for j in range(3 + SPECTRUM_BINS + 1)))
+        values = [max(feature[j] for feature in windows) for j in range(3 + SPECTRUM_BINS + 1)]
+        # Fine signed envelope from every PCM sample, without extra FFT work.
+        # Sixteen bins per overview slot produce 4096 real transient columns.
+        detail = []
+        for j in range(16):
+            a = start + (end-start)*j//16
+            b = start + (end-start)*(j+1)//16
+            chunk = samples[a:max(a+1,b)]
+            detail.append((min(chunk, default=0)/32768, max(chunk, default=0)/32768))
+        values[27] = max(max(abs(low),abs(high)) for low,high in detail)
+        bars.append(tuple(values + [detail]))
     return bars
 
 
@@ -145,7 +155,7 @@ class WaveformCache:
     def __init__(self, db_path):
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.execute(
-            "CREATE TABLE IF NOT EXISTS waveforms_v2 "
+            "CREATE TABLE IF NOT EXISTS waveforms_v3 "
             "(file_path TEXT PRIMARY KEY, mtime REAL, amplitudes TEXT)"
         )
         self.conn.commit()
@@ -156,7 +166,7 @@ class WaveformCache:
         try:
             mtime = os.path.getmtime(file_path)
             row = self.conn.execute(
-                "SELECT mtime, amplitudes FROM waveforms_v2 WHERE file_path = ?", (file_path,)
+                "SELECT mtime, amplitudes FROM waveforms_v3 WHERE file_path = ?", (file_path,)
             ).fetchone()
             if row and abs(row[0] - mtime) < 1.0:
                 return [tuple(bar) for bar in json.loads(row[1])]
@@ -169,7 +179,7 @@ class WaveformCache:
             return
         try:
             self.conn.execute(
-                "INSERT OR REPLACE INTO waveforms_v2 (file_path, mtime, amplitudes) VALUES (?, ?, ?)",
+                "INSERT OR REPLACE INTO waveforms_v3 (file_path, mtime, amplitudes) VALUES (?, ?, ?)",
                 (file_path, os.path.getmtime(file_path), json.dumps(bars)),
             )
             self.conn.commit()

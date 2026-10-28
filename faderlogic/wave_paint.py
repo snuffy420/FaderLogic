@@ -20,6 +20,9 @@ def rgb_colour(bar):
 
 
 def draw_waveform(p,w,h,bars,style,mode):
+    if style=='detailed':
+        draw_detailed(p,w,h,bars,mode)
+        return
     if style=='spectrogram':
         draw_spectrum(p,w,h,bars,mode)
         return
@@ -47,7 +50,7 @@ def draw_waveform(p,w,h,bars,style,mode):
         for f in (.25,.5,.75): p.drawLine(QPointF(0,h*f),QPointF(w,h*f))
     count=len(bars)
     for band in layers:
-        amplitudes=[min(1.,max(0.,row[band] if band is not None else row[-1] if len(row)>27 else max(row[:3]))) for row in bars]
+        amplitudes=[min(1.,max(0.,row[band] if band is not None else row[27] if len(row)>27 else max(row[:3]))) for row in bars]
         colours=[QColor(palette[band]) if band is not None else rgb_colour(row) if mode=='rgb' else QColor(COLORS['cyan']) for row in bars]
         gradient=QLinearGradient(0,0,w,0)
         for i,c in enumerate(colours): gradient.setColorAt(i/max(1,count-1),c)
@@ -90,9 +93,38 @@ def draw_waveform(p,w,h,bars,style,mode):
                 p.setPen(QPen(QColor(230,245,255,85),.5))
                 for i in range(0,count,4):
                     x=i*w/max(1,count-1)
-                    peak=min(1.,bars[i][-1] if len(bars[i])>27 else max(bars[i][:3]))
+                    peak=min(1.,bars[i][27] if len(bars[i])>27 else max(bars[i][:3]))
                     p.drawLine(QPointF(x,mid-peak*span),QPointF(x,mid-peak*span-2))
     p.setPen(QPen(QColor(165,202,225,55),.5));p.drawLine(QPointF(0,mid),QPointF(w,mid))
+
+
+def draw_detailed(p,w,h,bars,mode):
+    """Signed min/max PCM envelope, colored by measured local band energy."""
+    columns=[]
+    for row in bars:
+        detail=row[28] if len(row)>28 else [(-max(row[:3]),max(row[:3]))]
+        columns.extend((low,high,row[:3]) for low,high in detail)
+    # Aggregate to display pixels: retain short transients instead of dropping them.
+    count=max(1,min(int(w),len(columns)))
+    p.setRenderHint(QPainter.RenderHint.Antialiasing,False)
+    palette=THREE_BAND if mode=='bands' else LEGACY
+    for i in range(count):
+        group=columns[i*len(columns)//count:(i+1)*len(columns)//count]
+        low=min(row[0] for row in group); high=max(row[1] for row in group)
+        weights=[max(row[2][j] for row in group) for j in range(3)]
+        x=(i+.5)*w/count
+        if mode in ('bands','faderlogic'):
+            # Broad bass body with narrower mid/high detail, all on one centerline.
+            largest=max(.001,max(weights))
+            for band in range(3):
+                scale=(weights[band]/largest)**.6
+                p.setPen(QPen(QColor(palette[band]),max(1.,w/count)))
+                p.drawLine(QPointF(x,h/2-high*h*.47*scale),QPointF(x,h/2-low*h*.47*scale))
+        else:
+            colour=rgb_colour(weights) if mode=='rgb' else QColor(COLORS['cyan'])
+            p.setPen(QPen(colour,max(1.,w/count)))
+            p.drawLine(QPointF(x,h/2-high*h*.47),QPointF(x,h/2-low*h*.47))
+    p.setRenderHint(QPainter.RenderHint.Antialiasing,True)
 
 
 def envelope_paths(amplitudes,w,mid,span,mirror=True):

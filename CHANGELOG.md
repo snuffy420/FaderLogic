@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.4.2 - 2026-10-28
+
+- Release the wheel filtering, Behavior sorting controls and detailed waveform introduced in the 1.4.1 review build.
+- Center the active key-filter control immediately beneath the wheel and reserve its height and width while hidden, keeping the wheel, tables and footer stable when a key is selected or cleared.
+- Replace the sorting-option descriptions with short, generic explanations. Keep detailed supported-prefix examples in Help.
+- Refresh the README, in-app Help, appearance/source/build/publishing guides and screenshots for 1.4.2. Preserve beginner macOS/Linux setup with and without virtual environments.
+- Provide the themed Windows x64 installer, portable ZIP and 7z, source ZIP and 7z, SHA-256 checksums and a clean GitHub upload folder. Both portable formats contain a nested FaderLogic folder.
+- Add a geometry regression check for the centered filter control and an unchanged workspace across filter toggles.
+
+## 1.4.1 test build - 2026-10-28
+
+- Add an Options → Behavior tab with independent, saved choices to ignore leading punctuation and track-number prefixes in library Title sorting. Both default off; disabling both retains literal sorting.
+- Recognize zero-padded counters with spaces and short numeric prefixes with explicit separators. Preserve meaningful numeric titles, displayed metadata, filenames and audio paths.
+- Make the actual highlighted Camelot wedges clickable in every wheel design and both relation charts. Filter the library to the clicked exact A/B key without replacing its reference track or changing harmonic relationship colors.
+- Mark the active filter with a brighter wedge fill, white dashed inset and white dot, including the colour-blind design. Click the wedge again or the clear button to restore the list while respecting text search.
+- Combine key filters with search and sorting, show a clear empty state, and clear key filters when switching saved playlists. Prevent adding a reference track hidden by a filter.
+- Preserve built-set order and exact-order M3U8 exports throughout sorting/filtering.
+- Add Detailed audio waveform: a continuous signed peak envelope built from 4096 measured sub-bins, retaining short transients and quiet sections. Aggregate peaks to display pixels instead of dropping them.
+- Support Normal, measured RGB, shared-centreline 3-band and original-colour modes for the new waveform. Retain all previous non-3D designs and separate-lane Split bands options.
+- Retain background decoding, interruption of obsolete work and cached painting. Store finer analysis in a new waveform cache table; existing cached overviews refresh once.
+- Regenerate the offline dance preview with the same fine PCM envelope as decoded tracks. Keep Options previews on the same renderer and loaded-track data as the main display.
+- Expand in-app Help and README with workflow examples, exact sorting formats, filter indicators and clearing, waveform modes and actual limitations.
+- Provide a local Windows test EXE first. Public GitHub archives and installer are unchanged pending testing.
+
 ## 1.4.0 — 2026-10-27
 
 First public release. Earlier 1.x versions were local development/test builds.

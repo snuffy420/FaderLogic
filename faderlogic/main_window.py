@@ -25,6 +25,7 @@ from .storage import LibraryStore, track_snapshot
 from .paths import prepare_data_directory
 from .waveform import WaveformCache, WaveformWorker
 from .widgets import CamelotWheelWidget, TrackDetailsWidget, WaveformWidget
+from .behavior import TitleItem
 
 APP_NAME = "FaderLogic"
 ROW_COLOURS = {
@@ -67,6 +68,8 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1100, 700)
         self.resize(1480, 920)
         self.library = []          # all imported tracks
+        self.behavior = dict(punctuation=False, numbers=False)
+        self.key_filter = None
         self.active_set = []       # tracks in the set being built
         self.worker = None
         self._wave_workers = set()
@@ -303,8 +306,23 @@ class MainWindow(QMainWindow):
 
         wheel_card, wheel_layout = _card()
         self.wheel = CamelotWheelWidget()
+        self.wheel.keyClicked.connect(self._wheel_key_clicked)
         self.wheel.showAllChanged.connect(self._on_show_all_changed)
         wheel_layout.addWidget(self.wheel)
+        filter_row = QHBoxLayout()
+        filter_row.addStretch()
+        self.btn_key_filter = QPushButton('Key 12A ×')
+        self.btn_key_filter.setFixedHeight(32)
+        self.btn_key_filter.setMinimumWidth(112)
+        policy = self.btn_key_filter.sizePolicy()
+        policy.setRetainSizeWhenHidden(True)
+        self.btn_key_filter.setSizePolicy(policy)
+        self.btn_key_filter.setToolTip('Clear the wheel key filter')
+        self.btn_key_filter.clicked.connect(lambda: self._set_key_filter(None))
+        self.btn_key_filter.hide()
+        filter_row.addWidget(self.btn_key_filter)
+        filter_row.addStretch()
+        wheel_layout.addLayout(filter_row)
         self.wheel_legend = QLabel()
         self.wheel_legend.setWordWrap(True)
         style_widget(self.wheel_legend,"font-size:8pt;color:#E4E7EC;")
@@ -330,6 +348,7 @@ class MainWindow(QMainWindow):
         self.lib_table = self._make_table(["Title", "Artist", "BPM", "Camelot", "Key", "Time"])
         self.lib_table.setSortingEnabled(True)
         self.lib_table.model().layoutChanged.connect(lambda *_: self._sync_metadata_markers(self.lib_table))
+        self.lib_table.model().layoutChanged.connect(lambda *_: self._apply_filter(self.search.text()))
         self.lib_table.itemSelectionChanged.connect(self._on_library_selected)
         self.lib_table.cellClicked.connect(lambda *_: self._on_library_selected())
         lib_layout.addWidget(self.lib_table)
@@ -343,6 +362,10 @@ class MainWindow(QMainWindow):
         self.btn_add.setObjectName("primary")
         self.btn_add.clicked.connect(self.add_selected_to_set)
         library_group_layout.addWidget(self.btn_add)
+        self.lbl_empty_filter = QLabel('No matching tracks. Clear the search or the wheel key filter.')
+        self.lbl_empty_filter.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_empty_filter.hide()
+        library_group_layout.addWidget(self.lbl_empty_filter)
 
         set_card, set_layout = _card()
         set_layout.setContentsMargins(8, 8, 8, 8)
@@ -469,6 +492,7 @@ class MainWindow(QMainWindow):
             "label_mode": self.wheel.label_mode,
             "show_all": self.wheel.show_all,
             "appearance": self.appearance_settings(),
+            "behavior": self.behavior,
             "overlap": self.overlap.value(),
             "browser_visible": self.btn_playlists.isChecked(),
             "table_sizes": self.table_splitter.sizes(),
@@ -496,6 +520,7 @@ class MainWindow(QMainWindow):
 
     def _restore_session(self):
         state = self.store.load_session()
+        self.apply_behavior(state.get('behavior', {}), persist=False)
         camelot.set_active_chart(state.get("chart", camelot.active_chart_name))
         self.wheel.set_label_mode(state.get("label_mode", "camelot"))
         self.wheel.set_show_all(bool(state.get("show_all", False)))
@@ -558,6 +583,7 @@ class MainWindow(QMainWindow):
         self.active_playlist_name = entry["name"]
         self.linked_folder = entry["linked_folder"]
         self.library = entry["tracks"]
+        self._set_key_filter(None)
         self._preview_source = "library"
         self.search.blockSignals(True)
         self.search.clear()
@@ -872,7 +898,7 @@ class MainWindow(QMainWindow):
             for r, t in enumerate(tracks):
                 key = normalize_key(t["key"])
                 texts = playlist.display_metadata(t)
-                first = QTableWidgetItem(texts[0])
+                first = TitleItem(texts[0])
                 first.setData(Qt.ItemDataRole.UserRole, t)
                 camelot = QTableWidgetItem(key or playlist.UNKNOWN)
                 camelot.setData(Qt.ItemDataRole.UserRole + 1, camelot_sort_key(key))
@@ -887,6 +913,7 @@ class MainWindow(QMainWindow):
             self.lib_table.setSortingEnabled(True)
             if tracks:
                 self.lib_table.selectRow(0)
+        self._apply_filter(self.search.text())
         if preview_set:
             self._on_set_selected()
         else:
@@ -934,18 +961,54 @@ class MainWindow(QMainWindow):
         self._refresh_status()
 
     def _apply_filter(self, text):
-        query = text.strip().lower()
-        if not query:
-            self._fill_library(self.library)
-            return
-        matches = [t for t in self.library
-                   if query in t["title"].lower() or query in t["artist"].lower()
-                   or query in t["bpm"].lower() or query in (normalize_key(t["key"]) or "").lower()]
-        self._fill_library(matches)
+        query = text.strip().casefold()
+        visible = 0
+        for row in range(self.lib_table.rowCount()):
+            track = self.lib_table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            matches = self._matches_filter(track, query)
+            self.lib_table.setRowHidden(row, not matches)
+            visible += matches
+        self.btn_key_filter.setVisible(self.key_filter is not None)
+        self.btn_key_filter.setText(f'Key {self.key_filter} ×')
+        self.btn_key_filter.setToolTip(f'{visible} matching tracks. Click to clear the wheel key filter.')
+        self.lbl_empty_filter.setVisible(bool(self.library) and visible == 0)
+        self.search.setToolTip(f'{visible} matching tracks' if visible else 'No matching tracks. Clear the search or wheel key filter.')
+        if not self.key_filter and self._preview_source == 'library':
+            rows = self.lib_table.selectionModel().selectedRows()
+            if not rows or self.lib_table.isRowHidden(rows[0].row()):
+                self.lib_table.clearSelection()
+                for row in range(self.lib_table.rowCount()):
+                    if not self.lib_table.isRowHidden(row):
+                        self.lib_table.selectRow(row)
+                        break
+
+    def _matches_filter(self, track, query):
+        return (not self.key_filter or normalize_key(track.get('key')) == self.key_filter) and (
+            not query or any(query in str(track.get(field) or '').casefold() for field in ('title','artist','bpm','key')))
+
+    def _wheel_key_clicked(self, key):
+        self._set_key_filter(None if key == self.key_filter else key)
+
+    def _set_key_filter(self, key):
+        self.key_filter = key
+        self.wheel.set_filter_key(key)
+        self._apply_filter(self.search.text())
+
+    def apply_behavior(self, values, persist=True):
+        self.behavior = {key: bool(values.get(key, False)) for key in ('punctuation','numbers')}
+        self.lib_table.setProperty('title_sort_options', self.behavior)
+        header = self.lib_table.horizontalHeader()
+        self.lib_table.sortItems(header.sortIndicatorSection(), header.sortIndicatorOrder())
+        if persist:
+            self._apply_filter(self.search.text())
+            self._queue_save_session()
 
     # ---------- set builder ----------
     def add_selected_to_set(self):
         track = self._selected_library_track()
+        rows = self.lib_table.selectionModel().selectedRows()
+        if rows and self.lib_table.isRowHidden(rows[0].row()):
+            return
         if not track:
             return
         if any(t["path"] == track["path"] for t in self.active_set):
@@ -972,12 +1035,7 @@ class MainWindow(QMainWindow):
         self.refresh_relations()
 
     def library_view_tracks(self):
-        query = self.search.text().strip().lower()
-        if not query:
-            return self.library
-        return [t for t in self.library
-                if query in t["title"].lower() or query in t["artist"].lower()
-                or query in t["bpm"].lower() or query in (normalize_key(t["key"]) or "").lower()]
+        return [t for t in self.library if self._matches_filter(t, self.search.text().strip().casefold())]
 
     def show_options(self):
         OptionsDialog(self.wheel, self._icon_path, self).exec()

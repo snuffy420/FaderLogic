@@ -160,7 +160,13 @@ def main():
         capture(options, "options-wheel.png")
         options.findChild(QTabWidget).setCurrentIndex(2)
         capture(options, "columns.png")
+        options.findChild(QTabWidget).setCurrentIndex(3)
+        capture(options, "options-behavior.png")
         options.close()
+        window.apply_appearance(dict(wheel_style='outline',wave_style='detailed',wave_mode='rgb'))
+        window._set_key_filter('8A')
+        capture(window,'key-filter-detailed.png')
+        window._set_key_filter(None)
         for style in WHEEL_STYLES:
             window.apply_appearance(dict(wheel_style=style, wave_style='filled', wave_mode='rgb'))
             capture(window, f"workspace-{style}.png")

@@ -6,26 +6,42 @@
 FaderLogic is a DJ set builder for Rekordbox playlists. Import your M3U8 and TXT exports, explore key relationships on a large Camelot wheel, audition tracks, arrange your set, and export the finished order back to Rekordbox. Ready-to-run releases target Windows x64; macOS and Linux users can run the Python source.
 
 <p align="center">
-<a href="https://github.com/snuffy420/FaderLogic/releases/tag/v1.4.0">Download 1.4.0</a> ·
+<a href="https://github.com/snuffy420/FaderLogic/releases/tag/v1.4.2">Download 1.4.2</a> ·
 <a href="#macos-source-setup">macOS setup</a> · <a href="#linux-source-setup">Linux setup</a> ·
 <a href="https://snuffy420.github.io/FaderLogic/docs/contact.html">Contact</a>
 </p>
 
-**Version 1.4.0** · **Windows x64** · **GPL-3.0-or-later** · Created by **snuffy420 / zerØ software**
+**Version 1.4.2** · **Windows x64** · **GPL-3.0-or-later** · Created by **snuffy420 / zerØ software**
 
-Previously tested under the name MixLogic. The public release is **FaderLogic 1.4.0**. Existing exported sets remain readable without a TXT file. Saved playlists, linked folders and preferences can be copied forward automatically. See [moving from earlier test builds](docs/MIGRATING.md).
+Previously tested under the name MixLogic. The current release is **FaderLogic 1.4.2**. Existing exported sets remain readable without a TXT file. Saved playlists, linked folders and preferences can be copied forward automatically. See [moving from earlier test builds](docs/MIGRATING.md).
 
 ## Download and run
+
+### New in 1.4.2
+
+Version 1.4.2 adds clickable wheel filtering, independent title-sorting preferences and a detailed audio waveform.
+
+- **Clickable wheel:** click an actual highlighted Camelot wedge to filter the library to that exact key. A brighter fill, dashed white inset and white dot mark the active filter without changing its relation colour. Click that wedge again or **Key … ×** centered beneath the wheel to clear it. The colour-blind wheel includes the same visible marker alongside its patterns and codes. Text search and key filtering work together; switching saved playlists clears the key filter. Space beneath the wheel stays reserved, so the workspace does not shift when the control appears or disappears.
+- **Behavior options:** two independent, remembered checkboxes under **Options → Behavior** ignore leading punctuation and/or track numbers when sorting Title. Both start off. For example, `- Zhu` can sort under Z, and `01 Title`, `01. Title`, `02 - Title` or `01_Title` can sort under Title. Numeric prefixes accept zero-padded two/three-digit counters followed by whitespace, or one to three digits followed by `.`, `-`, `_` or `)`. Meaningful numeric titles such as `1999`, `99 Luftballons` and `2 Unlimited` stay intact. Enable both settings for combined prefixes such as `- 02 - Title`.
+- **Detailed audio waveform:** a continuous signed audio envelope with fine transient detail, measured from decoded samples. Select **Detailed audio waveform** under **Options → Appearance**, choose Normal, RGB, 3-band or FaderLogic original colours, and click **Apply**. RGB blends measured frequency energies; 3-band layers blue bass, orange mids and white highs around a shared centreline. Separate lanes remain exclusive to the Split bands designs. All earlier non-3D styles remain available.
+
+Wheel filtering keeps the reference key and its harmonic highlights in place until another track is selected. Neither filtering nor title sorting changes displayed track names, audio files, the built set's order or export order. The detailed waveform is an overview and does not add phrase labels, cue points or beat grids. Analysis stays in the background and is cached; older waveform caches are refreshed once for the finer data.
+
+![Behavior options in version 1.4.2](docs/screenshots/1.4.2/options-behavior.png)
+
+![Actual wheel filter and detailed waveform in version 1.4.2](docs/screenshots/1.4.2/key-filter-detailed.png)
+
+### Release downloads
 
 Choose the package that matches how you want to use FaderLogic:
 
 | Package | Contents | Requirements |
 | --- | --- | --- |
-| [Windows x64 installer](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.0/FaderLogic-1.4.0-windows-x64-setup.exe) | Themed installer, complete app, uninstaller, Start Menu entries and optional desktop shortcut | Windows 10/11 x64; administrator access for the default Program Files installation |
-| [Windows x64 portable](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.0/FaderLogic-1.4.0-windows-x64-portable.7z) | A nested `FaderLogic/` folder containing `FaderLogic.exe`, documentation and license notices | Windows 10/11 x64; no Python installation |
-| [Source ZIP](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.0/FaderLogic-1.4.0-source.zip) / [7z](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.0/FaderLogic-1.4.0-source.7z) | Application source, pinned dependencies, tests, assets, screenshot and release tools | Python 3.12 recommended; [Windows, macOS and Linux instructions](docs/SOURCE_SETUP.md) |
+| [Windows x64 installer](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.2/FaderLogic-1.4.2-windows-x64-setup.exe) | Themed installer, complete app, uninstaller, Start Menu entries and optional desktop shortcut | Windows 10/11 x64; administrator access for the default Program Files installation |
+| [Windows x64 portable ZIP](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.2/FaderLogic-1.4.2-windows-x64-portable.zip) / [7z](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.2/FaderLogic-1.4.2-windows-x64-portable.7z) | A nested `FaderLogic/` folder containing `FaderLogic.exe`, documentation and license notices | Windows 10/11 x64; no Python installation |
+| [Source ZIP](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.2/FaderLogic-1.4.2-source.zip) / [7z](https://github.com/snuffy420/FaderLogic/releases/download/v1.4.2/FaderLogic-1.4.2-source.7z) | Application source, pinned dependencies, tests, assets, screenshot and release tools | Python 3.12 recommended; [Windows, macOS and Linux instructions](docs/SOURCE_SETUP.md) |
 
-For the installer, run **FaderLogic-1.4.0-windows-x64-setup.exe** and follow the wizard. It installs to **Program Files\\FaderLogic** by default. Select the desktop-shortcut checkbox if wanted. Remove it later through Windows **Settings → Apps → Installed apps** (or Add/Remove Programs). Your saved playlists and preferences remain in `%LOCALAPPDATA%\\FaderLogic` after uninstalling.
+For the installer, run **FaderLogic-1.4.2-windows-x64-setup.exe** and follow the wizard. It installs to **Program Files\\FaderLogic** by default. Select the desktop-shortcut checkbox if wanted. Remove it later through Windows **Settings → Apps → Installed apps** (or Add/Remove Programs). Your saved playlists and preferences remain in `%LOCALAPPDATA%\\FaderLogic` after uninstalling.
 
 For the portable version:
 
@@ -37,7 +53,7 @@ Do not run the executable from inside the archive. The Windows builds are unsign
 
 ## Main workspace
 
-![FaderLogic 1.4.0 with the playlist browser, Camelot wheel, track tables and waveform preview](docs/screenshots/1.4.0/main.png)
+![FaderLogic 1.4.2 with the playlist browser, Camelot wheel, track tables and waveform preview](docs/screenshots/1.4.2/main.png)
 
 *Screenshots use generated demo audio and example metadata, not a bundled music library.*
 
@@ -69,9 +85,9 @@ The exported file contains references to your audio files, not copies of the mus
 
 ### Saved playlist browser
 
-![Playlist management and folder relinking](docs/screenshots/1.4.0/playlist-browser.png)
+![Playlist management and folder relinking](docs/screenshots/1.4.2/playlist-browser.png)
 
-![Renaming a saved playlist](docs/screenshots/1.4.0/rename.png)
+![Renaming a saved playlist](docs/screenshots/1.4.2/rename.png)
 
 ### Missing or unverified metadata
 
@@ -104,9 +120,9 @@ In **Options → Wheel**, choose Camelot numbers, musical key names, or both, an
 | **Chart 1 — energy boost / drop** | Perfect Match, Energy Boost +/++/+++, Energy Drop -/--/---, Mood Change |
 | **Chart 2 — harmonic transitions** | Perfect Mix, -1 Mix, +1 Mix, Energy Boost, Scale Change, Diagonal Mix, Jaw's Mix, Mood Shifter |
 
-![Chart 1 highlighted on the Camelot wheel](docs/screenshots/1.4.0/chart-1.png)
+![Chart 1 highlighted on the Camelot wheel](docs/screenshots/1.4.2/chart-1.png)
 
-![Chart 2 highlighted on the Camelot wheel](docs/screenshots/1.4.0/chart-2.png)
+![Chart 2 highlighted on the Camelot wheel](docs/screenshots/1.4.2/chart-2.png)
 
 Relations are directional: a transition from one key to another can have a different label when reversed. The **Relation to last** label compares the previewed track with the last track currently in the set and updates when the chart or set changes.
 
@@ -120,9 +136,9 @@ The charts are planning references. Track phrasing, arrangement, energy, vocals 
 
 ## Choose your look
 
-**Options → Appearance** previews five wheels, nine waveforms, four waveform modes and Dark/Light themes. Select your combination and click **Apply**; FaderLogic remembers it at startup. The original **Classic** wheel and bars remain available. There are no 3D designs or GPU view dependencies.
+**Options → Appearance** previews five wheels, ten waveforms, four waveform modes and Dark/Light themes. Select your combination and click **Apply**; FaderLogic remembers it at startup. The original **Classic** wheel and bars remain available. There are no 3D designs or GPU view dependencies.
 
-![Appearance settings with live previews](docs/screenshots/1.4.0/appearance-obsidian.png)
+![Appearance settings with live previews](docs/screenshots/1.4.2/appearance-obsidian.png)
 
 | Wheel | Look |
 | --- | --- |
@@ -134,17 +150,17 @@ The charts are planning references. Track phrasing, arrangement, energy, vocals 
 
 All standard designs use the same key and relation colors. Each wedge has its own isolated border/glow, so adjacent highlights retain their own colors. The selected key and musical name appear in the center of every wheel.
 
-![Five wheel designs using the same reference key](docs/screenshots/1.4.0/wheel-gallery.png)
+![Five wheel designs using the same reference key](docs/screenshots/1.4.2/wheel-gallery.png)
 
 ### Accessible colors and patterns
 
 The Colour-blind wheel carries the relation through **color + pattern + text**, with a live legend for the active chart. Number, musical key and relation code have separate fitted rows in Both mode. **SEL =** means selected and a same-key perfect match: it keeps its blue relation color and adds a white double outline. **×** marks an unlisted/dimmed key. Each chart has its own correctly matched explanation in Help.
 
-![Colour-blind wheel, Both labels and matching chart legend](docs/screenshots/1.4.0/accessible-both.png)
+![Colour-blind wheel, Both labels and matching chart legend](docs/screenshots/1.4.2/accessible-both.png)
 
 ### Waveforms that match your tracks
 
-Classic bars, Enhanced glow bars, Smooth filled, Spectrogram, Multilayer, Energy segments, Minimal glow line and two explicit Split bands designs are available. Each supports **Normal**, **RGB**, **3-band**, and **FaderLogic · original colors**.
+Detailed audio waveform, Classic bars, Enhanced glow bars, Smooth filled, Spectrogram, Multilayer, Energy segments, Minimal glow line and two explicit Split bands designs are available. Each supports **Normal**, **RGB**, **3-band**, and **FaderLogic · original colors**.
 
 - Normal shows amplitude in cyan.
 - RGB blends measured bass/red, mid/green and high/blue activity.
@@ -154,15 +170,15 @@ Classic bars, Enhanced glow bars, Smooth filled, Spectrogram, Multilayer, Energy
 
 The preview uses the loaded track's real waveform data and display height. Without a loaded track, it uses an original dance example processed with the same overview analyzer. Previews are cached; opening Options does not analyze or synthesize demo audio.
 
-![All nine waveform designs](docs/screenshots/1.4.0/waveform-gallery.png)
+![All ten waveform designs](docs/screenshots/1.4.2/waveform-gallery.png)
 
-![The four color modes using the same audio data](docs/screenshots/1.4.0/waveform-modes.png)
+![The four color modes using the same audio data](docs/screenshots/1.4.2/waveform-modes.png)
 
 Energy segments indicate measured quieter/medium/stronger passages; they do not claim to detect intros, drops or breakdowns. The spectrogram shows measured frequency content. See the [appearance gallery and controls](docs/APPEARANCE.md) for more.
 
 ### Light theme
 
-![FaderLogic Light theme](docs/screenshots/1.4.0/workspace-light.png)
+![FaderLogic Light theme](docs/screenshots/1.4.2/workspace-light.png)
 
 Theme changes preserve playlist order and the current preview. Musical/chart colors stay consistent; controls and table tints adapt for readability.
 
@@ -172,9 +188,9 @@ Drag a column boundary to resize any column, including **Title** and **Artist**.
 
 Use **Options → Table columns** to independently show or hide columns in each table. At least one column must remain visible. Hiding a column does not delete its metadata or affect export order.
 
-![Wheel settings with label cards and live preview](docs/screenshots/1.4.0/options-wheel.png)
+![Wheel settings with label cards and live preview](docs/screenshots/1.4.2/options-wheel.png)
 
-![Independent column visibility options for the library and set](docs/screenshots/1.4.0/columns.png)
+![Independent column visibility options for the library and set](docs/screenshots/1.4.2/columns.png)
 
 Close the playlist browser when you want more space for the wheel. Reopen it with the same **Playlists** button.
 
@@ -194,7 +210,7 @@ This is a planning estimate. FaderLogic exports a playlist; it does not render a
 
 The exported M3U8 keeps the lower table's **exact order**, including repeated tracks. Sorting or filtering the upper library does not change it.
 
-FaderLogic 1.4.0 exports also include optional metadata comment lines. They let the file reopen in FaderLogic with its titles, artists, BPM, keys, times and order intact, without a separate TXT file. Use **Import Playlist** and select the exported M3U8; it loads the ordered set for editing. If a set is already open, FaderLogic asks before replacing it.
+FaderLogic 1.4.2 exports also include optional metadata comment lines. They let the file reopen in FaderLogic with its titles, artists, BPM, keys, times and order intact, without a separate TXT file. Use **Import Playlist** and select the exported M3U8; it loads the ordered set for editing. If a set is already open, FaderLogic asks before replacing it.
 
 Normal playlist entries remain standard `#EXTM3U` / `#EXTINF` entries with absolute audio paths. Audio files and embedded music tags are not modified. In Rekordbox, display the playlist's normal track order if another column sort is active.
 
@@ -263,7 +279,7 @@ Alternatively, run **setup.ps1**, then **Run FaderLogic.cmd**. From source, gene
 
 The source runs through native Python and Qt. **macOS GUI/audio operation has not been tested on this release machine.** Use the source download, not the Windows EXE.
 
-1. Download the source archive from [Releases](https://github.com/snuffy420/FaderLogic/releases/tag/v1.4.0), or choose **Code → Download ZIP** on GitHub and extract the whole folder.
+1. Download the source archive from [Releases](https://github.com/snuffy420/FaderLogic/releases/tag/v1.4.2), or choose **Code → Download ZIP** on GitHub and extract the whole folder.
 2. Install **Python 3.12 or 3.13** from [python.org](https://www.python.org/downloads/macos/). Run its **Install Certificates.command** helper if offered.
 3. Press **Command + Space**, type **Terminal**, and open it. Type `cd ` with a space, drag the extracted source folder from Finder into Terminal, then press Enter.
 4. Run `ls` and check that `main.py` and `requirements.txt` are listed. Choose **one** method below. Paste one command at a time and press Enter.
@@ -345,7 +361,7 @@ For tests, builds, screenshot capture and release packaging, see [Building from 
 
 ## Changelog, source and licensing
 
-See the full [1.4.0 changelog](CHANGELOG.md) and [release notes](docs/RELEASE_NOTES_1.4.0.md).
+See the full [1.4.2 changelog](CHANGELOG.md) and [release notes](docs/RELEASE_NOTES_1.4.2.md).
 
 FaderLogic application code and original graphics are **GPL-3.0-or-later**. See [LICENSE](LICENSE), [COPYRIGHT](COPYRIGHT), [third-party notices](THIRD_PARTY_NOTICES.md) and [publishing notes](docs/PUBLISHING.md). Third-party components retain their own licenses.
 
@@ -355,9 +371,13 @@ Questions, feedback, or a bug to report? Send a private message through the Fade
 
 <a href="https://snuffy420.github.io/FaderLogic/docs/contact.html"><img src="assets/contact-button.svg" width="250" height="48" alt="Contact the FaderLogic developer"></a>
 
+![FaderLogic contact page](docs/screenshots/1.4.2/contact-desktop.png)
+
+The form uses Formspree and sends only the information you enter. For reproducible bugs, include your FaderLogic version, OS and steps. GitHub Pages needs to be enabled for the contact link; the included [publishing guide](docs/PUBLISHING.md) explains that setup.
+
 ## Help, About and support
 
-<table><tr><td><img src="docs/screenshots/1.4.0/about.png" alt="About FaderLogic"></td><td><img src="docs/screenshots/1.4.0/help.png" alt="In-app Help"></td></tr><tr><td><img src="docs/screenshots/1.4.0/metadata.png" alt="Metadata details"></td><td><img src="docs/screenshots/1.4.0/donate.png" alt="Optional Bitcoin support"></td></tr></table>
+<table><tr><td><img src="docs/screenshots/1.4.2/about.png" alt="About FaderLogic"></td><td><img src="docs/screenshots/1.4.2/help.png" alt="In-app Help"></td></tr><tr><td><img src="docs/screenshots/1.4.2/metadata.png" alt="Metadata details"></td><td><img src="docs/screenshots/1.4.2/donate.png" alt="Optional Bitcoin support"></td></tr></table>
 
 ## Support and credits
 

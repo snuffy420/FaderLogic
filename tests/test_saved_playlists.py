@@ -390,7 +390,8 @@ class SavedPlaylistTests(unittest.TestCase):
         current.rename(self.root / 'MixLogic-data')
         with patch.object(MainWindow, '_load_waveform'):
             restored = self.new_window()
-        self.assertEqual(restored.windowTitle(), 'FaderLogic 1.4.0')
+        from faderlogic import __version__
+        self.assertEqual(restored.windowTitle(), f'FaderLogic {__version__}')
         self.assertEqual(restored.active_playlist_id, identity)
         self.assertEqual(restored.linked_folder, r'D:\Saved Music')
         self.assertEqual([t['key'] for t in restored.active_set], ['5A', '5A'])

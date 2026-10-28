@@ -26,12 +26,14 @@ class CamelotWheelWidget(QWidget):
     """Two-ring Camelot wheel. Shows the selected key and its compatible keys."""
 
     showAllChanged = pyqtSignal(bool)
+    keyClicked = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setMinimumSize(120, 120)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.selected_key = None
+        self.filter_key = None
         self._status = {}
         self._detail = {}
         self.visual_style = "classic"
@@ -42,6 +44,30 @@ class CamelotWheelWidget(QWidget):
     def set_visual_style(self, style):
         self.visual_style = style if style in WHEEL_STYLES else "classic"
         self.update()
+
+    def set_filter_key(self, key):
+        self.filter_key = normalize_key(key)
+        self.update()
+
+    def key_at(self, position):
+        scale = (min(self.width(), self.height()) - 12) / 200
+        if scale <= 0:
+            return None
+        x = (position.x() - self.width()/2) / scale
+        y = (self.height()/2 - position.y()) / scale
+        radius = math.hypot(x, y)
+        if not 32 <= radius <= 96 or abs(radius - 62) < 1:
+            return None
+        angle = (90 - math.degrees(math.atan2(y, x)) + 15) % 360
+        if angle % 30 < .65 or angle % 30 > 29.35:
+            return None
+        return f"{WHEEL_ORDER[int(angle // 30)]}{'A' if radius < 62 else 'B'}"
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            code = self.key_at(event.position())
+            if code and (code == self.selected_key or code in self._status or code == self.filter_key):
+                self.keyClicked.emit(code)
 
 
     def segment_colours(self, code):
@@ -69,7 +95,8 @@ class CamelotWheelWidget(QWidget):
             index = int(((90 - math.degrees(math.atan2(y, x)) + 15) % 360) // 30)
             code = f"{WHEEL_ORDER[index]}{'A' if radius < 62 else 'B'}"
             relation = "Selected key" if code == self.selected_key else self._detail.get(code, "Not a listed transition" if self.selected_key else "Select a track to show relations")
-            self.setToolTip(f"{self._label(code)} — {relation}")
+            action = 'Click again to clear key filter' if code == self.filter_key else 'Click highlighted wedge to filter library'
+            self.setToolTip(f"{self._label(code)} — {relation}. {action}")
         else:
             self.setToolTip("")
 
@@ -220,6 +247,17 @@ class CamelotWheelWidget(QWidget):
                 painter.setPen(QPen(border, 1.5 if active else .5))
                 painter.setBrush(Qt.BrushStyle.NoBrush); painter.drawPath(path)
 
+        if code == self.filter_key:
+            # Keep the relation palette underneath a distinct filter marker.
+            tint = QColor('#FFFFFF'); tint.setAlpha(48)
+            painter.fillPath(path, tint)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.setPen(QPen(QColor('#FFFFFF'), 1.1, Qt.PenStyle.DashLine))
+            painter.drawPath(path)
+            mark_radius = outer_r - 3.7
+            angle = math.radians(center_angle)
+            painter.setBrush(QColor('#FFFFFF')); painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(QPointF(mark_radius*math.cos(angle), -mark_radius*math.sin(angle)), 1.5, 1.5)
         painter.restore()
         # Labels: the number and key name, placed at the centre of the ring segment.
         radius = (inner_r + outer_r) / 2

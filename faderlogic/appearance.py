@@ -7,6 +7,7 @@ WHEEL_STYLES = {
     "accessible": "Colour-blind · labels + patterns",
 }
 WAVE_STYLES = {
+    "detailed": "Detailed audio waveform",
     "classic": "Classic bars",
     "enhanced": "Enhanced glow bars",
     "filled": "Smooth filled",

@@ -604,6 +604,24 @@ in the colour key when <i>Show all variations</i> is enabled.</p>
 
 <h3 style="color:{COLORS['cyan']}">Adjust your workspace</h3>
 
+<p><b>Click the actual highlighted wheel wedge</b> to filter the library to that exact Camelot key.
+The filtered wedge gets a brighter fill, a dashed white inset outline and a white dot; its relation colour stays intact.
+On the colour-blind wheel the same filter marker supplements the relation patterns and codes.
+The reference track and its compatibility highlights stay unchanged until you choose another track.
+Click the same wedge again to deselect, or click <b>Key … ×</b> centered beneath the wheel.
+Its space stays reserved so the layout does not shift when the filter appears or disappears.
+Search and the key filter work together. Clear both to show the full library. Switching saved playlists clears the key filter.
+Filtering and sorting never rearrange your built set or exported order.</p>
+
+<p><b>Options &rarr; Behavior</b> has two independent, saved title-sorting choices, both off by default.
+<b>Ignore leading punctuation</b> sorts <i>- Zhu</i> under Z.
+<b>Ignore leading track numbers</b> recognizes zero-padded counters followed by a space, such as <i>01 Title</i>,
+or one to three digits followed by a period, hyphen, underscore or closing parenthesis, such as
+<i>01. Title</i>, <i>02 - Title</i> and <i>01_Title</i>.
+Meaningful titles such as <i>1999</i>, <i>99 Luftballons</i> and <i>2 Unlimited</i> are preserved.
+Enable both for combined prefixes such as <i>- 02 - Title</i>. These preferences affect Title sorting only;
+displayed titles, metadata, filenames and audio paths are unchanged.</p>
+
 <p>Drag between column headings to resize any track column, including Title and Artist.
 
 Drag the horizontal divider between the library and set to adjust their heights.
@@ -627,6 +645,14 @@ overlapping three-colour waveform. Obsidian Neon, Dark Minimal and Neon Outline 
 Preview it, then Apply to save it for next time. Harmonic key/relationship colours stay the same;
 
 tables and controls use theme-appropriate contrast. Waveform canvases stay dark to keep all frequency colours readable.</p>
+
+<p><b>Detailed audio waveform</b> shows a fine, continuous signed peak envelope measured from decoded audio,
+including short transients. Choose <b>RGB</b> for frequency-mixed colours or <b>3-band</b> for blue bass,
+orange mids and white highs on one centreline. Normal and FaderLogic original-colour modes also work.
+Only the explicit Split bands designs use separate frequency lanes. Choose the design and mode under
+<b>Options &rarr; Appearance</b>, then Apply to save. The preview uses the loaded track's data when available,
+otherwise an analyzed dance example. Click or drag the waveform to seek. This is an overview, not a zoomable DJ deck;
+it does not generate phrase labels, cues or beat grids. Existing waveform designs remain available.</p>
 
 <p>The <b>Colour-blind</b> wheel uses blue/gold tones plus patterns, solid/dashed edges and text:
 
@@ -927,6 +953,21 @@ class OptionsDialog(QDialog):
             self.column_summary=QLabel();self.column_summary.setObjectName('settingsHint')
             columns_layout.addWidget(self.column_summary);self._refresh_column_summary()
             columns_layout.addStretch();self.tabs.addTab(columns_page,'Table columns')
+        if parent is not None and hasattr(parent, 'apply_behavior'):
+            behavior_page=QWidget();behavior_layout=QVBoxLayout(behavior_page)
+            behavior_layout.setContentsMargins(16,14,16,14);behavior_layout.setSpacing(12)
+            heading(behavior_layout,'Library behavior','Choose how titles sort. Track names, files and the order of your set stay unchanged.')
+            self.behavior_checks={}
+            for key,title,description in (
+                    ('punctuation','Ignore leading punctuation when sorting titles','Sort alphabetically without counting symbols at the beginning of a title.'),
+                    ('numbers','Ignore leading track numbers when sorting titles','Sort alphabetically without counting track-number prefixes. Original titles stay unchanged.')):
+                card=QFrame();card.setObjectName('settingsCard');box=QVBoxLayout(card)
+                check=OptionCheckBox(title);check.setChecked(parent.behavior[key]);box.addWidget(check)
+                hint=QLabel(description);hint.setWordWrap(True);hint.setObjectName('settingsHint');box.addWidget(hint)
+                self.behavior_checks[key]=check
+                check.toggled.connect(lambda checked,k=key:parent.apply_behavior(dict(parent.behavior,**{k:checked})))
+                behavior_layout.addWidget(card)
+            behavior_layout.addStretch();self.tabs.addTab(behavior_page,'Behavior')
         close=QPushButton('Close');close.clicked.connect(self.accept)
         row=QHBoxLayout();self.appearance_status=QLabel('');self.appearance_status.setObjectName('settingsHint')
         row.addWidget(self.appearance_status);row.addStretch()
