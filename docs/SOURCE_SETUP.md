@@ -1,12 +1,12 @@
 # Run FaderLogic from source on macOS or Linux
 
-These instructions are for **FaderLogic 1.4.0 source**, not the Windows `.exe`. FaderLogic uses PyQt6, which supports macOS and Linux. The release is tested on Windows; macOS/Linux source operation is provided on a best-effort basis and has not been tested on those operating systems here. Audio codecs and window appearance can vary.
+These instructions are for **FaderLogic 1.4.2 source**, not the Windows `.exe`. FaderLogic uses PyQt6, which supports macOS and Linux. The release is tested on Windows; macOS/Linux source operation is provided on a best-effort basis and has not been tested on those operating systems here. Audio codecs and window appearance can vary.
 
 You do not need to be a programmer. Copy one command at a time, paste it into Terminal, then press **Enter**. Do not type the surrounding ``` marks. Keep the source folder in your own Downloads, Documents or home folder so FaderLogic can save its data.
 
 ## First: download and open the source folder
 
-1. Download **FaderLogic-1.4.0-source.zip** (the easiest choice on macOS/Linux), or **FaderLogic-1.4.0-source.7z** from the GitHub release.
+1. Download **FaderLogic-1.4.2-source.zip** (the easiest choice on macOS/Linux), or **FaderLogic-1.4.2-source.7z** from the GitHub release.
 2. Extract the entire ZIP using your computer’s normal Extract/Open command. For the 7z alternative, use an archive manager that supports 7z. If your computer cannot extract it, use a 7z-capable archive app, or download the repository with **Code → Download ZIP** and extract that instead.
 3. Open the extracted folder. You should see **main.py**, **requirements.txt**, **run_faderlogic.sh**, and a **faderlogic** folder. This is the folder you need below.
 4. Choose **one** installation method: a virtual environment (recommended), or the no-venv app-local method. You do not need both.

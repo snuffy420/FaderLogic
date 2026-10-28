@@ -1,14 +1,14 @@
-# Publishing FaderLogic 1.4.0
+# Publishing FaderLogic 1.4.2
 
 These tools prepare local artifacts. Nothing has been uploaded or published to GitHub.
 
 ## Upload the repository
 
-1. Rename or create the GitHub repository as **snuffy420/FaderLogic**. Open the clean GitHub/FaderLogic-1.4.0 folder (use the highest numbered suffix if packaging was repeated).
+1. Rename or create the GitHub repository as **snuffy420/FaderLogic**. Open the clean GitHub/FaderLogic-1.4.2 folder (use the highest numbered suffix if packaging was repeated).
 2. Upload **its contents** into https://github.com/snuffy420/FaderLogic at the repository root. Include .github, .gitignore, .gitattributes and .nojekyll. Do not add the outer version folder itself.
 3. Check README.md, the screenshot galleries and docs/contact.html. The source tree excludes personal playlists, database files, music, test EXEs and old build output.
-4. Create a release tagged **v1.4.0**, titled **FaderLogic 1.4.0**. Use docs/RELEASE_NOTES_1.4.0.md for the description; replace its relative documentation links with repository URLs in the GitHub Release editor.
-5. Attach the four 1.4.0 release files from releases/: setup.exe, portable.7z, source.zip and source.7z. Add their .sha256 sidecars and SHA256SUMS.txt. The .sha files contain the same SHA-256 values if you prefer that extension.
+4. Create a release tagged **v1.4.2**, titled **FaderLogic 1.4.2**. Use docs/RELEASE_NOTES_1.4.2.md for the description; replace its relative documentation links with repository URLs in the GitHub Release editor.
+5. Attach the five 1.4.2 release files from releases/: setup.exe, portable.zip, portable.7z, source.zip and source.7z. Add their .sha256 sidecars and SHA256SUMS.txt. The .sha files contain the same SHA-256 values if you prefer that extension.
 6. Verify the versioned download links in the README after publishing. Binaries belong in Releases, not source commits.
 
 ## Enable the contact page after verification

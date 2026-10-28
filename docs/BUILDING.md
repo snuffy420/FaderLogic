@@ -1,4 +1,4 @@
-# Building FaderLogic 1.4.0
+# Building FaderLogic 1.4.2
 
 The release target is Windows x64 with Python 3.12. The portable executable includes its Python/Qt runtime and needs no Python installation on the end user's machine.
 
@@ -24,7 +24,7 @@ python -m venv .venv
 
 The frozen smoke test launches a temporary copy headlessly, checks the playlist toggle, loads Options and donation/QR dependencies, and exits. Its temporary data is separate from the user's real library. The one-file bootloader requires ordinary Windows temporary-directory access; restricted execution sandboxes can block it before Python starts.
 
-The spec constrains Windows dependency discovery to system directories so unrelated applications on `PATH` cannot inject an incompatible ICU library. It also excludes unused optional notebook/array/plotting stacks and embeds the Windows 1.4.0 version resource. It does not modify system DLLs.
+The spec constrains Windows dependency discovery to system directories so unrelated applications on `PATH` cannot inject an incompatible ICU library. It also excludes unused optional notebook/array/plotting stacks and embeds the Windows 1.4.2 version resource. It does not modify system DLLs.
 
 To create a separately named test executable, set `FADERLOGIC_BUILD_NAME` before building. For a public build, clear that variable and `FADERLOGIC_CONSOLE_BUILD`.
 
@@ -34,7 +34,7 @@ To create a separately named test executable, set `FADERLOGIC_BUILD_NAME` before
 .\.venv\Scripts\python.exe tools\render_screenshots.py
 ```
 
-This renders the actual Qt interface into `docs/screenshots/1.4.0/`. It generates temporary mono WAV test audio, decodes a real waveform through the application, and uses example playlist metadata. It never loads a user's real saved library. Generated audio and temporary application state are removed after capture.
+This renders the actual Qt interface into `docs/screenshots/1.4.2/`. It generates temporary mono WAV test audio, decodes a real waveform through the application, and uses example playlist metadata. It never loads a user's real saved library. Generated audio and temporary application state are removed after capture.
 
 ## Build the complete release
 
@@ -46,11 +46,11 @@ Install 7-Zip and Inno Setup 7 on the build machine, then run:
 
 The tool collects dependency notices, runs the source tests, renders screenshots, builds `dist/FaderLogic.exe`, verifies the frozen executable, compiles the installer, and creates:
 
-- `releases/FaderLogic-1.4.0-windows-x64-portable.7z`, containing one top-level **FaderLogic** folder.
-- `releases/FaderLogic-1.4.0-source.7z`, containing **FaderLogic-1.4.0-source**.
-- `releases/FaderLogic-1.4.0-windows-x64-setup.exe`, the themed x64 installer.
+- `releases/FaderLogic-1.4.2-windows-x64-portable.zip` and `.7z`, containing one top-level **FaderLogic** folder.
+- `releases/FaderLogic-1.4.2-source.zip` and `.7z`, containing **FaderLogic-1.4.2-source**.
+- `releases/FaderLogic-1.4.2-windows-x64-setup.exe`, the themed x64 installer.
 - Matching `.sha256` and `.sha` SHA-256 sidecars, plus `releases/SHA256SUMS.txt`.
-- `GitHub/FaderLogic-1.4.0/`, a clean source tree for uploading at a repository root. A numbered suffix is used if that folder already exists.
+- `GitHub/FaderLogic-1.4.2/`, a clean source tree for uploading at a repository root. A numbered suffix is used if that folder already exists.
 
 `--package-only` packages an already verified `dist/FaderLogic.exe`. The archive integrity tests, allowlisted file selection and clean-tree checks still run. Release staging stays under `.build-temp/` and is removed after packaging.
 

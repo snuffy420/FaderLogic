@@ -1,20 +1,22 @@
-# FaderLogic 1.4.0 validation
+# FaderLogic 1.4.2 validation
 
 ## Application
 
-Verified on Windows x64 on **2026-10-27**: all **64 source tests passed**, the rebuilt FaderLogic executable passed native Windows startup/Options/theme/QR checks, and its bundle and version resources passed inspection.
+Verified on Windows x64 on **2026-10-28**: all **69 source tests passed**, the rebuilt FaderLogic executable passed native Windows startup/Options/theme/QR checks, and its bundle and version resources passed inspection.
 
-The source suite covers both charts and all 1,152 directional pairs, accessible palettes including selection, fitted Both labels, independently rendered neighbour borders, all 36 waveform design/mode combinations, FFT bands, metadata Unknown handling, playlist persistence, relinking, ordered exports/reimports, themes, option controls and current-track preview reuse. Rebrand checks cover both playlist headers, direct import without a TXT prompt, migration of source/portable and installed libraries, committed SQLite WAL state, original-folder preservation and restoration of the previous waveform-mode preference.
+A new layout regression verifies the key-filter control remains centered beneath the wheel and that showing, changing or clearing it leaves the wheel, tables, footer and window geometry unchanged. Workflow checks cover actual wedge hit-testing, filter/search combinations, playlist-switch clearing, independent sorting choices, persistence and exported order.
 
-Native Windows screenshots cover the main UI, both charts, all five wheels, nine waveform designs, all four color modes, Dark/Light, playlist management, metadata, Options, Help, About and Donate. Screenshots use generated original audio and example metadata, never private libraries.
+The source suite covers both charts and all 1,152 directional pairs, accessible palettes including selection, fitted Both labels, independently rendered neighbour borders, all 40 waveform design/mode combinations, FFT bands, metadata Unknown handling, playlist persistence, relinking, ordered exports/reimports, themes, option controls and current-track preview reuse. Rebrand checks cover both playlist headers, direct import without a TXT prompt, migration of source/portable and installed libraries, committed SQLite WAL state, original-folder preservation and restoration of the previous waveform-mode preference.
 
-Packaged checks exercise startup, playlist toggling, all appearance choices, theme persistence, QR dependencies and clean shutdown in an isolated directory. Bundle inspection checks 1.4.0 application/Windows resources and rejects Qt Quick/QML dependencies and incompatible injected ICU DLLs.
+Rendered Qt screenshots cover the main UI, both charts, all five wheels, ten waveform designs, all four color modes, Dark/Light, playlist management, metadata, Options, Help, About and Donate. Screenshots use generated original audio and example metadata, never private libraries.
+
+Packaged checks exercise startup, playlist toggling, all appearance choices, theme persistence, QR dependencies and clean shutdown in an isolated directory. Bundle inspection checks 1.4.2 application/Windows resources and rejects Qt Quick/QML dependencies and incompatible injected ICU DLLs.
 
 ## Installer and archives
 
-The FaderLogic 1.4.0 installer passed the complete isolated per-user installation, Add/Remove Programs registration, payload comparison, installed startup, user-profile data storage, uninstall and saved-data retention checks. An earlier MixLogic installation was not modified. Final Program Files installation and optional desktop shortcut placement remain available for the author's manual check.
+The themed 1.4.2 installer is compiled with the new executable and complete documentation. The full isolated install/start/uninstall cycle previously passed for 1.4.0. It is not rerun over the author’s existing registered FaderLogic 1.4.0 installation; the test deliberately refuses to modify an existing installation. Manual upgrade, Program Files placement and optional desktop shortcut confirmation remain for the author.
 
-The Inno x64 installer includes the verified 1.4.0 EXE and complete payload. Its separate FaderLogic installer identity keeps it independent of earlier test installations. The included per-user setup/start/uninstall test checks registration/version, full payload, installed.flag, user-profile data storage, executable removal and data retention when run on a machine without an existing FaderLogic registration. It refuses to modify an existing installation with that identity.
+The Inno x64 installer includes the verified 1.4.2 EXE and complete payload. Its separate FaderLogic installer identity keeps it independent of earlier test installations. The included per-user setup/start/uninstall test checks registration/version, full payload, installed.flag, user-profile data storage, executable removal and data retention when run on a machine without an existing FaderLogic registration. It refuses to modify an existing installation with that identity.
 
 Source and portable archives are integrity-tested, checked for one top-level folder and built from allowlisted files. No music, personal playlists, databases, dependency environments or old test EXEs are included. The clean source tree is prepared separately for GitHub upload. SHA-256 checksums accompany each release file.
 

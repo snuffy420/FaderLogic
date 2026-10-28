@@ -1,6 +1,6 @@
 # Moving from earlier test builds to FaderLogic
 
-The public application is named **FaderLogic**, version **1.4.0**. Earlier private builds used the name MixLogic.
+The public application is named **FaderLogic**, version **1.4.2**. Earlier private builds used the name MixLogic.
 
 ## Existing exported sets
 
