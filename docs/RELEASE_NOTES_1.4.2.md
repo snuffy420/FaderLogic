@@ -4,7 +4,9 @@ Click highlighted keys directly on the Camelot wheel to filter your library, con
 
 ## What's new
 
-- Click an actual highlighted wheel wedge to filter to that exact key. The wedge gains a brighter fill, dashed white inset and white dot while retaining its relationship color. Click again to clear, or use the centered key control beneath the wheel. Its space stays reserved so the layout does not move.
+- Compact, fixed-width Metadata review control beside Search on the right, keeping the active key control clear and the footer stable when a playlist contains missing fields.
+
+- Click an actual highlighted wheel wedge to filter to that exact key. The wedge gains a brighter fill, dashed white inset and white dot while retaining its relationship color. Click again to clear, or use the centered key control in the bottom footer. Its footer space stays reserved so the layout does not move.
 - Combine wheel filtering with text search. Changing saved playlists clears the filter. All five wheels, both charts and the colour-blind patterns remain supported.
 - New **Options → Behavior** preferences independently ignore leading punctuation and track-number prefixes when sorting Title. Both are off initially and saved when changed. Track names, files and the order of your built set remain intact.
 - **Detailed audio waveform** retains fine signed audio peaks and short transients. Choose Normal, RGB, shared-centreline 3-band or original colours, with the same renderer in Options and the main window. Existing waveform styles remain available.

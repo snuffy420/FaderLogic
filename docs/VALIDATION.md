@@ -2,9 +2,11 @@
 
 ## Application
 
-Verified on Windows x64 on **2026-10-28**: all **69 source tests passed**, the rebuilt FaderLogic executable passed native Windows startup/Options/theme/QR checks, and its bundle and version resources passed inspection.
+Verified on Windows x64 on **2026-10-28**: all **70 source tests passed**, the approved FaderLogic executable passed native Windows startup/Options/theme/QR checks, and its bundle and version resources passed inspection.
 
-A new layout regression verifies the key-filter control remains centered beneath the wheel and that showing, changing or clearing it leaves the wheel, tables, footer and window geometry unchanged. Workflow checks cover actual wedge hit-testing, filter/search combinations, playlist-switch clearing, independent sorting choices, persistence and exported order.
+The Metadata control remains a fixed 100 × 22 logical pixels beside Search on the right. A layout regression covers 1, 72 and 930 flagged tracks and clearing the warnings, checking that the button never expands and that the wheel, tables, key control, search and footer retain their geometry.
+
+A new layout regression verifies the key-filter control remains centered in the bottom footer beneath the wheel column and that showing, changing or clearing it leaves the wheel, tables, footer and window geometry unchanged. Workflow checks cover actual wedge hit-testing, filter/search combinations, playlist-switch clearing, independent sorting choices, persistence and exported order.
 
 The source suite covers both charts and all 1,152 directional pairs, accessible palettes including selection, fitted Both labels, independently rendered neighbour borders, all 40 waveform design/mode combinations, FFT bands, metadata Unknown handling, playlist persistence, relinking, ordered exports/reimports, themes, option controls and current-track preview reuse. Rebrand checks cover both playlist headers, direct import without a TXT prompt, migration of source/portable and installed libraries, committed SQLite WAL state, original-folder preservation and restoration of the previous waveform-mode preference.
 

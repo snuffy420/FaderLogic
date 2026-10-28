@@ -52,7 +52,7 @@ Appearance choices remain local to the preview until Apply. The theme/design/mod
 
 ## Library filters and sorting
 
-Click a highlighted wheel wedge to filter the library to its exact key. A brighter fill, dashed white inset and white dot mark the active filter. Click again, or use the centered key control beneath the wheel to clear it. The control reserves its space while hidden, keeping the workspace stable. Text search combines with the filter.
+Click a highlighted wheel wedge to filter the library to its exact key. A brighter fill, dashed white inset and white dot mark the active filter. Click again, or use the centered key control in the bottom footer to clear it. The control reserves its space while hidden, keeping the workspace stable. Text search combines with the filter.
 
 Options → Behavior provides independent saved switches to ignore leading punctuation and track-number prefixes when sorting titles. These settings leave displayed names, files and set/export order unchanged. Full supported formats are explained in Help.
 
